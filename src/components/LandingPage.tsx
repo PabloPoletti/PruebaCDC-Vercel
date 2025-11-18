@@ -62,9 +62,18 @@ export default function LandingPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
-        className="relative h-[70vh] min-h-[500px] bg-gradient-to-r from-cdc-dark-green to-cdc-green flex items-center justify-center text-white"
+        className="relative h-[70vh] min-h-[500px] bg-gradient-to-r from-cdc-dark-green to-cdc-green flex items-center justify-center text-white overflow-hidden"
       >
-        <div className="absolute inset-0 bg-black/30" />
+        <div className="absolute inset-0">
+          <Image
+            src="/images/hero/cdc-hero.svg"
+            alt="Centro de Día Comunitario"
+            fill
+            className="object-cover opacity-40"
+            priority
+          />
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/50" />
         <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
           <motion.h1
             initial={{ y: 20, opacity: 0 }}
@@ -482,6 +491,7 @@ export default function LandingPage() {
         isOpen={activeModal === 'transformarte'}
         onClose={() => setActiveModal(null)}
         title="TransformArte"
+        image="/images/talleres/transformarte.svg"
         content={
           <div>
             <p className="text-lg mb-4">
@@ -512,6 +522,7 @@ export default function LandingPage() {
         isOpen={activeModal === 'amor-huerta'}
         onClose={() => setActiveModal(null)}
         title="Amor de Huerta"
+        image="/images/talleres/amor-huerta.svg"
         content={
           <div>
             <p className="text-lg mb-4">
@@ -545,6 +556,7 @@ export default function LandingPage() {
         isOpen={activeModal === 'expresamente'}
         onClose={() => setActiveModal(null)}
         title="ExpresaMente"
+        image="/images/talleres/expresamente.svg"
         content={
           <div>
             <p className="text-lg mb-4">
@@ -576,6 +588,7 @@ export default function LandingPage() {
         isOpen={activeModal === 'espacio-grupal'}
         onClose={() => setActiveModal(null)}
         title="Espacio Grupal"
+        image="/images/talleres/espacio-grupal.svg"
         content={
           <div>
             <p className="text-lg mb-4">
@@ -612,6 +625,7 @@ export default function LandingPage() {
         isOpen={activeModal === 'columna-radial'}
         onClose={() => setActiveModal(null)}
         title="Columna Radial"
+        image="/images/talleres/columna-radial.svg"
         content={
           <div>
             <p className="text-lg mb-4">
@@ -793,6 +807,7 @@ export default function LandingPage() {
         isOpen={activeModal === 'teatro'}
         onClose={() => setActiveModal(null)}
         title="Teatro Leído"
+        image="/images/talleres/teatro.svg"
         content={
           <div>
             <p className="text-lg mb-4">

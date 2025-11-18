@@ -1,0 +1,15 @@
+<svg width="1920" height="1080" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="heroGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e7e34;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#155724;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#heroGrad)"/>
+  <text x="960" y="480" font-family="Arial, sans-serif" font-size="120" font-weight="bold" fill="white" text-anchor="middle">Centro de Día</text>
+  <text x="960" y="620" font-family="Arial, sans-serif" font-size="120" font-weight="bold" fill="white" text-anchor="middle">Comunitario</text>
+  <text x="960" y="760" font-family="Arial, sans-serif" font-size="80" fill="#e0ffe0" text-anchor="middle">25 de Mayo - La Pampa</text>
+  <circle cx="960" cy="900" r="60" fill="white" opacity="0.3"/>
+  <text x="960" y="920" font-family="Arial, sans-serif" font-size="60" fill="white" text-anchor="middle">💚</text>
+</svg>
+

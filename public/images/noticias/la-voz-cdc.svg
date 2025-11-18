@@ -1,0 +1,13 @@
+<svg width="1200" height="800" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="vozGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#06b6d4;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0891b2;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#vozGrad)"/>
+  <text x="600" y="320" font-family="Arial, sans-serif" font-size="100" font-weight="bold" fill="white" text-anchor="middle">La Voz del CDC</text>
+  <text x="600" y="490" font-family="Arial, sans-serif" font-size="140" text-anchor="middle">📰</text>
+  <text x="600" y="630" font-family="Arial, sans-serif" font-size="40" fill="#cffafe" text-anchor="middle">Diario Digital</text>
+</svg>
+

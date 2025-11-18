@@ -1,0 +1,13 @@
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="expresaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#6366f1;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#expresaGrad)"/>
+  <text x="400" y="250" font-family="Arial, sans-serif" font-size="80" font-weight="bold" fill="white" text-anchor="middle">ExpresaMente</text>
+  <text x="400" y="380" font-family="Arial, sans-serif" font-size="120" text-anchor="middle">✍️</text>
+  <text x="400" y="480" font-family="Arial, sans-serif" font-size="32" fill="#dbeafe" text-anchor="middle">Escritura y Expresión</text>
+</svg>
+
