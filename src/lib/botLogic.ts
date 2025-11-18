@@ -1,8 +1,9 @@
-// Lógica del bot CDC con IA + RAG (igual que bot de WhatsApp)
+// Lógica del bot CDC con IA + RAG + Analytics
 
 import Groq from 'groq-sdk'
 import { readFile } from 'fs/promises'
 import { join } from 'path'
+import { logConversation, detectTopics, analyzeSentiment, formatTimestamp } from './analytics'
 
 // =====================================================
 // TIPOS
@@ -266,15 +267,52 @@ function expandWithSynonyms(query: string): string[] {
 // FUNCIÓN RAG MEJORADA
 // =====================================================
 
-export async function ragAnswer(query: string): Promise<string> {
+export async function ragAnswer(query: string, sessionId: string = 'anonymous'): Promise<string> {
+  const startTime = Date.now()
+  let modelUsed = 'llama-70b'
+  let errorOccurred = false
+  let errorMessage = ''
+  let contextRelevance = 0
+  
   // Validación inicial
   if (!groqClient) {
     console.error('❌ groqClient no inicializado')
+    errorOccurred = true
+    errorMessage = 'groqClient no inicializado'
+    
+    // Log error
+    await logConversation({
+      timestamp: formatTimestamp(),
+      sessionId,
+      userMessage: query,
+      botResponse: '⚠️ Sistema no disponible',
+      ragUsed: false,
+      modelUsed: 'none',
+      responseTime: Date.now() - startTime,
+      errorOccurred: true,
+      errorMessage,
+    }).catch(() => {}) // No bloquear si falla
+    
     return '⚠️ El sistema de respuestas inteligentes no está disponible. Podés contactarnos al 299 4152668.'
   }
   
   if (knowledgeBase.length === 0) {
     console.error('❌ knowledgeBase vacía')
+    errorOccurred = true
+    errorMessage = 'knowledgeBase vacía'
+    
+    await logConversation({
+      timestamp: formatTimestamp(),
+      sessionId,
+      userMessage: query,
+      botResponse: '⚠️ Base de conocimientos no cargada',
+      ragUsed: false,
+      modelUsed: 'none',
+      responseTime: Date.now() - startTime,
+      errorOccurred: true,
+      errorMessage,
+    }).catch(() => {})
+    
     return '⚠️ La base de conocimientos no está cargada. Podés contactarnos al 299 4152668.'
   }
 
@@ -367,8 +405,25 @@ TU RESPUESTA (simple y clara):`
 
     const answer = response.choices[0]?.message?.content || 'No pude generar una respuesta.'
     
+    // Calcular relevancia del contexto (estimación basada en matches)
+    contextRelevance = relevantTexts.length > 0 ? relevantTexts[0].coverage : 0
+    
     // Log para debugging
     console.log('✅ Respuesta generada:', answer.substring(0, 100) + '...')
+    
+    // Log analytics
+    await logConversation({
+      timestamp: formatTimestamp(),
+      sessionId,
+      userMessage: query,
+      userMessageNormalized: normalizedQuery,
+      botResponse: answer,
+      ragUsed: true,
+      modelUsed,
+      responseTime: Date.now() - startTime,
+      errorOccurred: false,
+      contextRelevance,
+    }).catch(() => {})
     
     return answer
 
@@ -431,16 +486,48 @@ Respuesta (máximo 3 oraciones):`
       const fallbackAnswer = fallbackResponse.choices[0]?.message?.content || ''
       if (fallbackAnswer) {
         console.log('✅ Fallback exitoso con Llama 8B')
+        modelUsed = 'llama-8b-fallback'
+        
+        // Log analytics del fallback
+        await logConversation({
+          timestamp: formatTimestamp(),
+          sessionId,
+          userMessage: query,
+          userMessageNormalized: normalizedQuery,
+          botResponse: fallbackAnswer,
+          ragUsed: true,
+          modelUsed,
+          responseTime: Date.now() - startTime,
+          errorOccurred: false,
+          errorMessage: 'Llama 70B failed, used 8B fallback',
+        }).catch(() => {})
+        
         return fallbackAnswer
       }
     } catch (fallbackError) {
       console.error('❌ Fallback también falló:', fallbackError)
+      errorMessage += ' | Fallback failed: ' + (fallbackError as Error).message
     }
     
     // Último recurso: responder con info básica sin IA
     const basicInfo = `${INFO_CENTRO}\n\n${HORARIOS}\n\nDirección: ${DIRECCION}\nTeléfono: ${TELEFONO}`
+    const finalResponse = `⚠️ No pude conectar con el servicio de respuestas inteligentes, pero aquí está la información básica:\n\n${basicInfo}\n\nPara consultas específicas, llamá al ${TELEFONO} o escribí *0* para volver al menú.`
     
-    return `⚠️ No pude conectar con el servicio de respuestas inteligentes, pero aquí está la información básica:\n\n${basicInfo}\n\nPara consultas específicas, llamá al ${TELEFONO} o escribí *0* para volver al menú.`
+    // Log analytics del error final
+    await logConversation({
+      timestamp: formatTimestamp(),
+      sessionId,
+      userMessage: query,
+      userMessageNormalized: normalizedQuery,
+      botResponse: finalResponse,
+      ragUsed: false,
+      modelUsed: 'fallback-no-ai',
+      responseTime: Date.now() - startTime,
+      errorOccurred: true,
+      errorMessage,
+    }).catch(() => {})
+    
+    return finalResponse
   }
 }
 
