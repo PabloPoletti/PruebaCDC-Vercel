@@ -66,10 +66,10 @@ export default function LandingPage() {
       >
         <div className="absolute inset-0">
           <Image
-            src="/images/hero/hero-principal.jpg"
-            alt="Centro de Día Comunitario"
+            src="/images/hero/inicio-extra-6.png"
+            alt="Centro de Día Comunitario 25 de Mayo"
             fill
-            className="object-cover opacity-50"
+            className="object-contain bg-gradient-to-r from-cdc-dark-green to-cdc-green"
             priority
           />
         </div>
@@ -194,8 +194,8 @@ export default function LandingPage() {
             >
               <div className="relative h-48 overflow-hidden">
                 <Image
-                  src="/images/talleres/transformarte-principal.jpg"
-                  alt="TransformArte"
+                  src="/images/hero/inicio-extra-4.jpg"
+                  alt="TransformArte - Reciclaje Artístico"
                   fill
                   className="object-cover"
                 />
@@ -228,7 +228,7 @@ export default function LandingPage() {
             >
               <div className="relative h-48 overflow-hidden">
                 <Image
-                  src="/images/talleres/amor-huerta-principal.jpg"
+                  src="/images/hero/inicio-extra-8.png"
                   alt="Amor de Huerta"
                   fill
                   className="object-cover"
@@ -297,8 +297,8 @@ export default function LandingPage() {
             >
               <div className="relative h-48 overflow-hidden">
                 <Image
-                  src="/images/hero/hero-actividad.jpg"
-                  alt="Teatro Leído"
+                  src="/images/hero/hero-principal.jpg"
+                  alt="Teatro Leído y Escritura"
                   fill
                   className="object-cover"
                 />
@@ -331,7 +331,7 @@ export default function LandingPage() {
             >
               <div className="relative h-48 overflow-hidden">
                 <Image
-                  src="/images/noticias/noticia-evento.jpg"
+                  src="/images/hero/inicio-extra-9.jpg"
                   alt="Espacio Grupal"
                   fill
                   className="object-cover"
@@ -365,7 +365,7 @@ export default function LandingPage() {
             >
               <div className="relative h-48 overflow-hidden">
                 <Image
-                  src="/images/hero/hero-comunidad.jpg"
+                  src="/images/hero/hero-actividad.jpg"
                   alt="Columna Radial"
                   fill
                   className="object-cover"
@@ -634,7 +634,7 @@ export default function LandingPage() {
         isOpen={activeModal === 'transformarte'}
         onClose={() => setActiveModal(null)}
         title="TransformArte"
-        image="/images/talleres/transformarte-principal.jpg"
+        image="/images/hero/inicio-extra-4.jpg"
         content={
           <div>
             <p className="text-lg mb-4">
@@ -665,7 +665,7 @@ export default function LandingPage() {
         isOpen={activeModal === 'amor-huerta'}
         onClose={() => setActiveModal(null)}
         title="Amor de Huerta"
-        image="/images/talleres/amor-huerta-principal.jpg"
+        image="/images/hero/inicio-extra-8.png"
         content={
           <div>
             <p className="text-lg mb-4">
@@ -731,7 +731,7 @@ export default function LandingPage() {
         isOpen={activeModal === 'espacio-grupal'}
         onClose={() => setActiveModal(null)}
         title="Espacio Grupal"
-        image="/images/noticias/noticia-evento.jpg"
+        image="/images/hero/inicio-extra-9.jpg"
         content={
           <div>
             <p className="text-lg mb-4">
@@ -768,7 +768,7 @@ export default function LandingPage() {
         isOpen={activeModal === 'columna-radial'}
         onClose={() => setActiveModal(null)}
         title="Columna Radial"
-        image="/images/hero/hero-comunidad.jpg"
+        image="/images/hero/hero-actividad.jpg"
         content={
           <div>
             <p className="text-lg mb-4">
@@ -950,7 +950,7 @@ export default function LandingPage() {
         isOpen={activeModal === 'teatro'}
         onClose={() => setActiveModal(null)}
         title="Teatro Leído"
-        image="/images/hero/hero-actividad.jpg"
+        image="/images/hero/hero-principal.jpg"
         content={
           <div>
             <p className="text-lg mb-4">
