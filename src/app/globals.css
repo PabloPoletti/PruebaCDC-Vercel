@@ -17,6 +17,15 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+html {
+  background: white;
+}
+
+body {
+  background: linear-gradient(to bottom, white, #f9fafb);
 }
 
 /* Custom scrollbar */
