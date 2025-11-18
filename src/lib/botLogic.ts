@@ -273,6 +273,7 @@ export async function ragAnswer(query: string, sessionId: string = 'anonymous'):
   let errorOccurred = false
   let errorMessage = ''
   let contextRelevance = 0
+  let normalizedQuery = query // Inicializar con query original
   
   // Validación inicial
   if (!groqClient) {
@@ -318,7 +319,7 @@ export async function ragAnswer(query: string, sessionId: string = 'anonymous'):
 
   try {
     // 1. Normalizar y expandir query
-    const normalizedQuery = normalizeWhatsAppText(query)
+    normalizedQuery = normalizeWhatsAppText(query) // Actualizar la variable ya declarada
     console.log('📝 Query original:', query)
     console.log('✏️ Query normalizada:', normalizedQuery)
     
