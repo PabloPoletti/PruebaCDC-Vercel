@@ -157,23 +157,96 @@ const SPANISH_STOPWORDS = [
 ]
 
 const SYNONYMS: Record<string, string[]> = {
-  'psicólogo': ['terapeuta', 'psicóloga', 'psicoterapia', 'terapia', 'profesional'],
-  'taller': ['actividad', 'espacio', 'grupo', 'encuentro', 'clase'],
-  'horario': ['hora', 'cuándo', 'día', 'cuando', 'tiempo', 'schedule'],
-  'huerta': ['cultivo', 'plantas', 'horticultura', 'jardín', 'verduras'],
-  'reciclaje': ['reciclado', 'transformarte', 'reutilizar', 'reciclar', 'reusar'],
-  'ayuda': ['apoyo', 'asistencia', 'acompañamiento', 'soporte', 'auxilio'],
-  'adicción': ['consumo', 'sustancias', 'dependencia', 'drogas', 'adicciones'],
+  // Profesionales
+  'psicólogo': ['terapeuta', 'psicóloga', 'psicologo', 'psicologa', 'psicoterapia', 'terapia', 'profesional', 'doc', 'doctor'],
+  'psiquiatra': ['psikiatra', 'sikiatra', 'medico', 'médico'],
+  
+  // Talleres y actividades
+  'taller': ['actividad', 'espacio', 'grupo', 'encuentro', 'clase', 'tayer', 'taler', 'activida'],
+  'huerta': ['cultivo', 'plantas', 'horticultura', 'jardín', 'jardin', 'verduras', 'uerta', 'guerta'],
+  'reciclaje': ['reciclado', 'transformarte', 'reutilizar', 'reciclar', 'reusar', 'reciklaje', 'resiclar'],
+  'teatro': ['obra', 'actuación', 'actuacion', 'drama', 'teátro'],
+  'radio': ['columna', 'programa', 'emisora', 'radial'],
+  
+  // Tiempo y horarios
+  'horario': ['hora', 'cuándo', 'cuando', 'día', 'dia', 'tiempo', 'schedule', 'orario', 'q dia', 'ke dia', 'k dia'],
+  'mañana': ['manana', 'matutino', 'temprano', 'am', 'antes del mediodia', 'maña'],
+  'tarde': ['tardesita', 'pm', 'despues del mediodia', 'x la tarde'],
+  
+  // Ayuda y consultas
+  'ayuda': ['apoyo', 'asistencia', 'acompañamiento', 'acompaña', 'soporte', 'auxilio', 'ayudar', 'ayudenme'],
+  'adicción': ['consumo', 'sustancias', 'dependencia', 'drogas', 'adicciones', 'vicio', 'problema'],
+  'consulta': ['consultar', 'preguntar', 'pregunta', 'info', 'información', 'informacion', 'konsulta'],
+  
+  // Costos y acceso
+  'gratis': ['gratuito', 'free', 'sin costo', 'no pago', 'no se paga', 'gratiz'],
+  'turno': ['cita', 'hora', 'reserva', 'agendar', 'pedir hora', 'sacar turno'],
+  
+  // Ubicación
+  'dónde': ['donde', 'ubicación', 'ubicacion', 'dirección', 'direccion', 'como llego', 'adonde', 'a donde'],
+  'cómo': ['como', 'de que forma', 'de q forma', 'de ke forma'],
+}
+
+// Normalizar texto de WhatsApp/coloquial
+function normalizeWhatsAppText(text: string): string {
+  let normalized = text.toLowerCase()
+  
+  // Correcciones ortográficas comunes
+  const corrections: Record<string, string> = {
+    // k/q por que/qué
+    'q ': 'que ', 'k ': 'que ', 'qe ': 'que ', 'ke ': 'que ',
+    ' q ': ' que ', ' k ': ' que ',
+    'xq': 'porque', 'xk': 'porque', 'porq': 'porque', 'pork': 'porque',
+    
+    // Abreviaturas de tiempo
+    'tmb': 'también', 'tb': 'también', 'tbn': 'también',
+    'dsp': 'después', 'desp': 'después',
+    'bn': 'bien', 'mñn': 'mañana', 'mñana': 'mañana',
+    
+    // h inicial
+    'ola': 'hola', 'ora': 'hora', 'orario': 'horario',
+    'ay': 'hay',
+    
+    // Números por letras
+    'x': 'por', 
+    'd ': 'de ', 
+    
+    // Mayúsculas todo
+    'TODO': 'todo',
+    
+    // Repetición de letras (emoción)
+    'holaaa': 'hola',
+    'siiii': 'si',
+    'nooo': 'no',
+  }
+  
+  // Aplicar correcciones
+  Object.entries(corrections).forEach(([wrong, correct]) => {
+    normalized = normalized.replace(new RegExp(wrong, 'gi'), correct)
+  })
+  
+  // Quitar signos de interrogación/exclamación múltiples
+  normalized = normalized.replace(/[?!]+/g, ' ')
+  
+  // Quitar puntos suspensivos múltiples
+  normalized = normalized.replace(/\.{2,}/g, ' ')
+  
+  // Normalizar espacios
+  normalized = normalized.replace(/\s+/g, ' ').trim()
+  
+  return normalized
 }
 
 function filterStopwords(words: string[]): string[] {
   return words.filter(word =>
-    word.length > 3 && !SPANISH_STOPWORDS.includes(word.toLowerCase())
+    word.length > 2 && !SPANISH_STOPWORDS.includes(word.toLowerCase()) // Cambié de 3 a 2
   )
 }
 
 function expandWithSynonyms(query: string): string[] {
-  const words = query.toLowerCase().split(/\s+/)
+  // Primero normalizar el texto
+  const normalizedQuery = normalizeWhatsAppText(query)
+  const words = normalizedQuery.split(/\s+/)
   const expanded: Set<string> = new Set(words)
 
   words.forEach(word => {
@@ -206,7 +279,11 @@ export async function ragAnswer(query: string): Promise<string> {
   }
 
   try {
-    // 1. Expandir query con sinónimos
+    // 1. Normalizar y expandir query
+    const normalizedQuery = normalizeWhatsAppText(query)
+    console.log('📝 Query original:', query)
+    console.log('✏️ Query normalizada:', normalizedQuery)
+    
     const expandedWords = expandWithSynonyms(query)
     console.log('🔍 Query expandida:', expandedWords.slice(0, 10))
 
@@ -252,25 +329,23 @@ export async function ragAnswer(query: string): Promise<string> {
     // 6. Si no hay contexto relevante, usar info general
     const finalContext = context || `${INFO_CENTRO}\n\n${HORARIOS}\n\nDirección: ${DIRECCION}\nTeléfono: ${TELEFONO}`
 
-    // 7. Mejorar prompt con personalidad empática
-    const prompt = `Sos Sofía, asistente virtual del Centro de Día Comunitario de 25 de Mayo.
+    // 7. Prompt adaptado a lenguaje coloquial
+    const prompt = `Sos Sofía del Centro de Día de 25 de Mayo. Hablás simple y cercano.
 
-INFORMACIÓN DISPONIBLE:
+INFORMACIÓN:
 ${finalContext}
 
-INSTRUCCIONES CRÍTICAS:
-1. Respondé SOLAMENTE con información EXPLÍCITA en el texto de arriba
-2. NO digas "no está especificado" si la información SÍ está en el texto
-3. Sé DIRECTA y ESPECÍFICA: si hay un taller por la mañana, decí cuál es, qué día y a qué hora
-4. Si mencionás horarios, SIEMPRE incluí la dirección (Trenel 53)
-5. Si es sobre talleres, mencioná que son gratuitos y sin inscripción previa
-6. Si NO hay información clara, decí: "Para esa consulta específica, llamá al 299 4152668"
-7. Máximo 3 oraciones, directo al punto
+IMPORTANTE:
+- Respondé DIRECTO, sin rodeos
+- Si pregunta por horarios, decí día + hora + dirección (Trenel 53)
+- Todo es GRATIS y sin inscripción
+- Si no sabés algo: "Llamá al 299 4152668 que te ayudan"
+- Máximo 3 líneas
 
-PREGUNTA DEL USUARIO:
+PREGUNTA (puede tener errores de ortografía, es normal):
 ${query}
 
-RESPUESTA DIRECTA Y ESPECÍFICA:`
+TU RESPUESTA (simple y clara):`
 
     // 8. Llamar a la IA con modelo mejorado
     console.log('🤖 Llamando a Groq/Llama 70B...')
