@@ -11,7 +11,7 @@
 // =====================================================
 
 // ID de tu Google Sheet (obtener de la URL)
-const SPREADSHEET_ID = 'TU_SPREADSHEET_ID_AQUI';
+const SPREADSHEET_ID = '1vcUEk78giKIktMRtkpDv-eTk-7LSEVqQwqxakwfBMnc';
 
 // =====================================================
 // FUNCIÓN PRINCIPAL - Recibe POST del bot

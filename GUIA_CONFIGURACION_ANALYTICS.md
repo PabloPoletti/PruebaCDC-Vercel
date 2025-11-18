@@ -35,7 +35,7 @@ Registrar **todas las interacciones** del bot en Google Sheets para análisis po
 ---
 
 ## 🔧 PASO 2: CONFIGURAR GOOGLE APPS SCRIPT
-
+ 
 ### 2.1. Abrir Script Editor
 1. En tu Google Sheet, ir a: **Extensiones → Apps Script**
 2. Se abrirá el editor de código
