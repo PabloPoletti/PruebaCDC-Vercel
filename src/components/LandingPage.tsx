@@ -499,112 +499,96 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto">
           <h2 className="text-4xl font-bold text-center mb-12">¿Cómo encontrarnos?</h2>
           
-          <div className="grid lg:grid-cols-2 gap-8 mb-12">
-            {/* Información de Contacto */}
-            <div className="space-y-8">
-              <div className="grid md:grid-cols-2 gap-6">
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  className="bg-white/10 backdrop-blur-sm rounded-lg p-6 text-center"
-                >
-                  <div className="text-4xl mb-3">📍</div>
-                  <h3 className="text-xl font-bold mb-2">Dirección</h3>
-                  <p className="text-green-100">Calle Trenel N°53<br />25 de Mayo, La Pampa</p>
-                </motion.div>
-
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  className="bg-white/10 backdrop-blur-sm rounded-lg p-6 text-center"
-                >
-                  <div className="text-4xl mb-3">📞</div>
-                  <h3 className="text-xl font-bold mb-2">Teléfono</h3>
-                  <a href="tel:2994152668" className="text-green-100 hover:text-white transition-colors">
-                    299 4152668
-                  </a>
-                </motion.div>
-
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  className="bg-white/10 backdrop-blur-sm rounded-lg p-6 text-center md:col-span-2"
-                >
-                  <div className="text-4xl mb-3">📧</div>
-                  <h3 className="text-xl font-bold mb-2">Email</h3>
-                  <a 
-                    href="mailto:cdc.25demayolp.coordinacion@gmail.com" 
-                    className="text-green-100 hover:text-white transition-colors break-words"
-                  >
-                    cdc.25demayolp.coordinacion@gmail.com
-                  </a>
-                </motion.div>
-              </div>
-
-              {/* Horarios */}
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-                <h3 className="text-2xl font-bold mb-4 text-center">Horarios de Verano</h3>
-                <div className="space-y-3">
-                  <p className="text-lg">
-                    <strong>Mañanas:</strong> Lunes a Viernes 9:00 - 12:00 hs
-                  </p>
-                  <p className="text-lg">
-                    <strong>Tardes:</strong> Lunes, Miércoles y Jueves 16:00 - 19:00 hs
-                  </p>
-                  <p className="text-lg">
-                    <strong>Tardes:</strong> Martes y Viernes 17:00 - 20:00 hs
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Mapa de Google Maps */}
+          <div className="grid md:grid-cols-3 gap-6 mb-8">
+            {/* Dirección con Mapa */}
             <motion.div
-              initial={{ opacity: 0, x: 50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="relative h-[500px] rounded-2xl overflow-hidden shadow-2xl"
+              whileHover={{ scale: 1.02 }}
+              className="bg-white/10 backdrop-blur-sm rounded-lg overflow-hidden"
             >
-              <a
-                href="https://www.google.com/maps/place/Trenel+53,+L6238+25+de+Mayo,+La+Pampa/@-37.7694444,-67.7263889,17z"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block w-full h-full group relative"
-              >
-                {/* Iframe de Google Maps */}
-                <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3258.3!2d-67.7263889!3d-37.7694444!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x96769e8e8e8e8e8e%3A0x8e8e8e8e8e8e8e8e!2sTrenel%2053%2C%20L6238%2025%20de%20Mayo%2C%20La%20Pampa!5e0!3m2!1ses-419!2sar!4v1234567890123!5m2!1ses-419!2sar"
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  className="w-full h-full"
-                />
-                
-                {/* Overlay con texto al hacer hover */}
-                <div className="absolute inset-0 bg-cdc-dark-green/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none">
-                  <div className="text-center">
-                    <div className="text-5xl mb-3">📍</div>
-                    <p className="text-xl font-bold">Click para abrir en Google Maps</p>
-                    <p className="text-sm mt-2 text-green-100">Obtener direcciones</p>
+              <div className="p-6 text-center">
+                <div className="text-4xl mb-3">📍</div>
+                <h3 className="text-xl font-bold mb-2">Dirección</h3>
+                <p className="text-green-100 mb-4">Calle Trenel N°53<br />25 de Mayo, La Pampa</p>
+              </div>
+              
+              {/* Mini Mapa */}
+              <div className="relative h-48 w-full">
+                <a
+                  href="https://maps.app.goo.gl/tkH2KrRx2zFGav7R6"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full h-full group relative"
+                >
+                  <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d817.0743098449984!2d-67.72451893033024!3d-37.77169729866385!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x96769b0c0e3f5555%3A0x5a5a5a5a5a5a5a5a!2sCentro%20de%20D%C3%ADa%20Comunitario!5e0!3m2!1ses-419!2sar!4v1234567890123!5m2!1ses-419!2sar"
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    className="w-full h-full"
+                  />
+                  
+                  {/* Overlay sutil */}
+                  <div className="absolute inset-0 bg-cdc-dark-green/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none">
+                    <div className="text-center">
+                      <div className="text-3xl mb-1">🗺️</div>
+                      <p className="text-sm font-semibold">Ver en Google Maps</p>
+                    </div>
                   </div>
-                </div>
+                </a>
+              </div>
+            </motion.div>
+
+            {/* Teléfono */}
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              className="bg-white/10 backdrop-blur-sm rounded-lg p-6 text-center flex flex-col justify-center"
+            >
+              <div className="text-4xl mb-3">📞</div>
+              <h3 className="text-xl font-bold mb-2">Teléfono</h3>
+              <a 
+                href="tel:2994152668" 
+                className="text-green-100 hover:text-white transition-colors text-lg"
+              >
+                299 4152668
+              </a>
+            </motion.div>
+
+            {/* Email */}
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              className="bg-white/10 backdrop-blur-sm rounded-lg p-6 text-center flex flex-col justify-center"
+            >
+              <div className="text-4xl mb-3">📧</div>
+              <h3 className="text-xl font-bold mb-2">Email</h3>
+              <a 
+                href="mailto:cdc.25demayolp.coordinacion@gmail.com" 
+                className="text-green-100 hover:text-white transition-colors break-words text-sm"
+              >
+                cdc.25demayolp.coordinacion@gmail.com
               </a>
             </motion.div>
           </div>
 
-          {/* Botón para abrir en Google Maps (móvil) */}
-          <div className="text-center">
-            <motion.a
-              href="https://www.google.com/maps/place/Trenel+53,+L6238+25+de+Mayo,+La+Pampa/@-37.7694444,-67.7263889,17z"
-              target="_blank"
-              rel="noopener noreferrer"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="inline-flex items-center gap-2 bg-white text-cdc-dark-green px-8 py-4 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all"
-            >
-              <span className="text-2xl">🗺️</span>
-              <span>Abrir en Google Maps</span>
-            </motion.a>
+          {/* Horarios */}
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 max-w-3xl mx-auto">
+            <h3 className="text-2xl font-bold mb-4 text-center">Horarios de Verano</h3>
+            <div className="grid md:grid-cols-3 gap-4 text-center">
+              <div>
+                <p className="font-semibold mb-1">Mañanas</p>
+                <p className="text-green-100">Lunes a Viernes<br />9:00 - 12:00 hs</p>
+              </div>
+              <div>
+                <p className="font-semibold mb-1">Tardes</p>
+                <p className="text-green-100">Lun, Mié, Jue<br />16:00 - 19:00 hs</p>
+              </div>
+              <div>
+                <p className="font-semibold mb-1">Tardes</p>
+                <p className="text-green-100">Mar, Vie<br />17:00 - 20:00 hs</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
