@@ -35,8 +35,8 @@ export async function POST(request: NextRequest) {
       data: {},
     }
 
-    // Procesar mensaje
-    const { response, newState } = await botResponse(message, currentState)
+    // Procesar mensaje (pasar sessionId para analytics)
+    const { response, newState } = await botResponse(message, currentState, sessionId)
 
     // Guardar nuevo estado
     sessions.set(sessionId, newState)

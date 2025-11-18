@@ -166,7 +166,19 @@ export function generateSessionId(): string {
 }
 
 export function formatTimestamp(): string {
-  return new Date().toISOString()
+  // Crear fecha en timezone de Argentina (UTC-3)
+  const now = new Date()
+  const argentinaTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }))
+  
+  // Formatear como ISO pero mostrando hora local
+  const year = argentinaTime.getFullYear()
+  const month = String(argentinaTime.getMonth() + 1).padStart(2, '0')
+  const day = String(argentinaTime.getDate()).padStart(2, '0')
+  const hours = String(argentinaTime.getHours()).padStart(2, '0')
+  const minutes = String(argentinaTime.getMinutes()).padStart(2, '0')
+  const seconds = String(argentinaTime.getSeconds()).padStart(2, '0')
+  
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds} (UTC-3)`
 }
 
 export function getUserAgent(): string {

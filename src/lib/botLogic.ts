@@ -554,16 +554,44 @@ Elegí una opción:
 }
 
 // =====================================================
+// HELPER: Log de opciones de menú
+// =====================================================
+
+async function logMenuOption(
+  sessionId: string,
+  userMessage: string,
+  botResponse: string,
+  menuOption: string,
+  startTime: number
+) {
+  await logConversation({
+    timestamp: formatTimestamp(),
+    sessionId,
+    userMessage,
+    botResponse,
+    ragUsed: false,
+    modelUsed: 'menu',
+    responseTime: Date.now() - startTime,
+    errorOccurred: false,
+    menuOption,
+  }).catch(() => {})
+}
+
+// =====================================================
 // FUNCIÓN PRINCIPAL DEL BOT
 // =====================================================
 
-export async function botResponse(raw: string, state: BotState): Promise<{ response: string; newState: BotState }> {
+export async function botResponse(raw: string, state: BotState, sessionId: string = 'anonymous'): Promise<{ response: string; newState: BotState }> {
   const msg = raw.trim().toLowerCase()
+  const startTime = Date.now()
 
   // Comando para volver al menú
   if (['0', 'menu', 'menú', 'volver', 'inicio'].includes(msg)) {
+    const response = menuPrincipal()
+    await logMenuOption(sessionId, raw, response, 'Menu Principal', startTime)
+    
     return {
-      response: menuPrincipal(),
+      response,
       newState: { ...state, step: 'menu' },
     }
   }
@@ -583,22 +611,27 @@ export async function botResponse(raw: string, state: BotState): Promise<{ respo
     }
 
     if (['1', 'uno'].includes(msg)) {
+      const response = `${INFO_CENTRO}\n\n_Escribí *0* o *menú* para volver al menú principal._`
+      await logMenuOption(sessionId, raw, response, '1 - Qué es el CDC', startTime)
+      
       return {
-        response: `${INFO_CENTRO}\n\n_Escribí *0* o *menú* para volver al menú principal._`,
+        response,
         newState: state,
       }
     }
 
     if (['2', 'dos'].includes(msg)) {
+      const response = `📍 *Ubicación y Contacto*\n\n🏠 Dirección: ${DIRECCION}\n📞 Teléfono: ${TELEFONO}\n📧 Email: ${EMAIL}\n\n⏰ *Horarios:*\n${HORARIOS}\n\n💡 Podés acercarte sin turno para primera consulta.\n\n_Escribí *0* o *menú* para volver al menú principal._`
+      await logMenuOption(sessionId, raw, response, '2 - Horarios y Contacto', startTime)
+      
       return {
-        response: `📍 *Ubicación y Contacto*\n\n🏠 Dirección: ${DIRECCION}\n📞 Teléfono: ${TELEFONO}\n📧 Email: ${EMAIL}\n\n⏰ *Horarios:*\n${HORARIOS}\n\n💡 Podés acercarte sin turno para primera consulta.\n\n_Escribí *0* o *menú* para volver al menú principal._`,
+        response,
         newState: state,
       }
     }
 
     if (['3', 'tres'].includes(msg)) {
-      return {
-        response: `🏥 *Servicios y Dispositivos del CDC:*
+      const response = `🏥 *Servicios y Dispositivos del CDC:*
 
 ✅ Acompañamiento para personas en situación de consumos problemáticos
 ✅ Dispositivo grupal quincenal para familiares de personas con consumos
@@ -612,14 +645,17 @@ export async function botResponse(raw: string, state: BotState): Promise<{ respo
 📌 No se necesita derivación médica
 📌 Atención para mayores de 13 años
 
-_Escribí *0* o *menú* para volver al menú principal._`,
+_Escribí *0* o *menú* para volver al menú principal._`
+      await logMenuOption(sessionId, raw, response, '3 - Servicios', startTime)
+      
+      return {
+        response,
         newState: state,
       }
     }
 
     if (['4', 'cuatro'].includes(msg)) {
-      return {
-        response: `🎨 *Talleres del CDC*
+      const response = `🎨 *Talleres del CDC*
 
 1️⃣ *TransformArte* - Reciclado creativo
    📅 Lunes y Jueves 18:00-20:00 hs
@@ -641,32 +677,40 @@ _Escribí *0* o *menú* para volver al menú principal._`,
 5️⃣ *Columna Radial*
    📻 Radio municipal - Lunes 11:00 hs
 
-👉 Escribí el número para más información, o *0* para volver al menú.`,
+👉 Escribí el número para más información, o *0* para volver al menú.`
+      await logMenuOption(sessionId, raw, response, '4 - Talleres', startTime)
+      
+      return {
+        response,
         newState: { ...state, step: 'talleres_menu' },
       }
     }
 
     if (['5', 'cinco'].includes(msg)) {
+      const response = '📅 *Sistema de turnos con psiquiatra*\n\nLos turnos son los viernes por la mañana.\n\n⚠️ Sistema de turnos simplificado. Para agendar, contactá al 299 4152668.\n\n_Escribí *0* o *menú* para volver al menú principal._'
+      await logMenuOption(sessionId, raw, response, '5 - Turnos Psiquiatra', startTime)
+      
       return {
-        response: '📅 *Sistema de turnos con psiquiatra*\n\nLos turnos son los viernes por la mañana.\n\n⚠️ Sistema de turnos simplificado. Para agendar, contactá al 299 4152668.\n\n_Escribí *0* o *menú* para volver al menú principal._',
+        response,
         newState: state,
       }
     }
 
     if (['6', 'seis'].includes(msg)) {
+      let response: string
       if (state.mis_turnos.length > 0) {
         const turnosText = state.mis_turnos
           .map((t, idx) => `${idx + 1}. 📅 ${t.fecha} - ${t.hora} hs\n   👤 ${t.nombre}\n   🧠 ${t.motivo}`)
           .join('\n\n')
-        return {
-          response: `📋 *Tus turnos:*\n\n${turnosText}\n\n_Escribí *0* o *menú* para volver al menú principal._`,
-          newState: state,
-        }
+        response = `📋 *Tus turnos:*\n\n${turnosText}\n\n_Escribí *0* o *menú* para volver al menú principal._`
       } else {
-        return {
-          response: '❌ No tenés turnos registrados.\n\n_Escribí *0* o *menú* para volver al menú principal._',
-          newState: state,
-        }
+        response = '❌ No tenés turnos registrados.\n\n_Escribí *0* o *menú* para volver al menú principal._'
+      }
+      await logMenuOption(sessionId, raw, response, '6 - Ver Mis Turnos', startTime)
+      
+      return {
+        response,
+        newState: state,
       }
     }
 
