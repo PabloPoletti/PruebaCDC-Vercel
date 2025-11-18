@@ -192,8 +192,16 @@ export default function LandingPage() {
               whileHover={{ scale: 1.05 }}
               className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all text-left"
             >
-              <div className="bg-gradient-to-r from-purple-500 to-pink-500 h-48 flex items-center justify-center">
-                <span className="text-6xl">♻️</span>
+              <div className="relative h-48 overflow-hidden">
+                <Image
+                  src="/images/talleres/transformarte-principal.jpg"
+                  alt="TransformArte"
+                  fill
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-purple-900/90 to-transparent flex items-center justify-center">
+                  <span className="text-6xl">♻️</span>
+                </div>
               </div>
               <div className="p-6">
                 <h3 className="text-2xl font-bold mb-3 text-cdc-dark-green">TransformArte</h3>
@@ -218,8 +226,16 @@ export default function LandingPage() {
               whileHover={{ scale: 1.05 }}
               className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all text-left"
             >
-              <div className="bg-gradient-to-r from-green-500 to-emerald-500 h-48 flex items-center justify-center">
-                <span className="text-6xl">🌱</span>
+              <div className="relative h-48 overflow-hidden">
+                <Image
+                  src="/images/talleres/amor-huerta-principal.jpg"
+                  alt="Amor de Huerta"
+                  fill
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-green-900/90 to-transparent flex items-center justify-center">
+                  <span className="text-6xl">🌱</span>
+                </div>
               </div>
               <div className="p-6">
                 <h3 className="text-2xl font-bold mb-3 text-cdc-dark-green">Amor de Huerta</h3>
@@ -245,8 +261,16 @@ export default function LandingPage() {
               whileHover={{ scale: 1.05 }}
               className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all text-left"
             >
-              <div className="bg-gradient-to-r from-blue-500 to-indigo-500 h-48 flex items-center justify-center">
-                <span className="text-6xl">✍️</span>
+              <div className="relative h-48 overflow-hidden">
+                <Image
+                  src="/images/talleres/expresamente-principal.jpg"
+                  alt="ExpresaMente"
+                  fill
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-blue-900/90 to-transparent flex items-center justify-center">
+                  <span className="text-6xl">✍️</span>
+                </div>
               </div>
               <div className="p-6">
                 <h3 className="text-2xl font-bold mb-3 text-cdc-dark-green">ExpresaMente</h3>
@@ -271,8 +295,16 @@ export default function LandingPage() {
               whileHover={{ scale: 1.05 }}
               className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all text-left"
             >
-              <div className="bg-gradient-to-r from-pink-500 to-rose-500 h-48 flex items-center justify-center">
-                <span className="text-6xl">🎭</span>
+              <div className="relative h-48 overflow-hidden">
+                <Image
+                  src="/images/hero/hero-actividad.jpg"
+                  alt="Teatro Leído"
+                  fill
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-pink-900/90 to-transparent flex items-center justify-center">
+                  <span className="text-6xl">🎭</span>
+                </div>
               </div>
               <div className="p-6">
                 <h3 className="text-2xl font-bold mb-3 text-cdc-dark-green">Teatro Leído</h3>
@@ -297,8 +329,16 @@ export default function LandingPage() {
               whileHover={{ scale: 1.05 }}
               className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all text-left"
             >
-              <div className="bg-gradient-to-r from-amber-500 to-orange-500 h-48 flex items-center justify-center">
-                <span className="text-6xl">💬</span>
+              <div className="relative h-48 overflow-hidden">
+                <Image
+                  src="/images/noticias/noticia-evento.jpg"
+                  alt="Espacio Grupal"
+                  fill
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-amber-900/90 to-transparent flex items-center justify-center">
+                  <span className="text-6xl">💬</span>
+                </div>
               </div>
               <div className="p-6">
                 <h3 className="text-2xl font-bold mb-3 text-cdc-dark-green">Espacio Grupal</h3>
@@ -323,8 +363,16 @@ export default function LandingPage() {
               whileHover={{ scale: 1.05 }}
               className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all text-left"
             >
-              <div className="bg-gradient-to-r from-red-500 to-rose-500 h-48 flex items-center justify-center">
-                <span className="text-6xl">📻</span>
+              <div className="relative h-48 overflow-hidden">
+                <Image
+                  src="/images/hero/hero-comunidad.jpg"
+                  alt="Columna Radial"
+                  fill
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-red-900/90 to-transparent flex items-center justify-center">
+                  <span className="text-6xl">📻</span>
+                </div>
               </div>
               <div className="p-6">
                 <h3 className="text-2xl font-bold mb-3 text-cdc-dark-green">Columna Radial</h3>
@@ -470,19 +518,114 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Galería de Fotos */}
+      <section className="py-16 px-4 bg-gray-50">
+        <div className="max-w-6xl mx-auto">
+          <motion.h2
+            initial={{ y: 50, opacity: 0 }}
+            whileInView={{ y: 0, opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-4xl font-bold text-center mb-12 text-cdc-dark-green"
+          >
+            📸 Galería de Momentos
+          </motion.h2>
+          
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {[
+              '/images/noticias/noticia-evento.jpg',
+              '/images/noticias/noticia-actividad.jpg',
+              '/images/noticias/noticia-taller.png',
+              '/images/talleres/amor-huerta-cultivo.png',
+              '/images/talleres/amor-huerta-cosecha.png',
+              '/images/noticias/noticias-extra-4.jpg',
+              '/images/noticias/noticias-extra-5.jpg',
+              '/images/noticias/noticias-extra-6.jpg',
+            ].map((src, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.1 }}
+                whileHover={{ scale: 1.05 }}
+                className="relative aspect-square rounded-lg overflow-hidden shadow-lg cursor-pointer"
+              >
+                <Image
+                  src={src}
+                  alt={`Actividad CDC ${idx + 1}`}
+                  fill
+                  className="object-cover hover:scale-110 transition-transform duration-300"
+                />
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
-      <footer className="bg-gray-900 text-gray-300 py-8 px-4">
-        <div className="max-w-6xl mx-auto text-center">
-          <p className="mb-2">
-            <strong className="text-white">Centro de Día Comunitario - 25 de Mayo</strong>
-          </p>
-          <p className="text-sm">
-            Un dispositivo de SEDRONAR, Subsecretaría de Salud Mental y Adicciones de La Pampa,
-            y Municipalidad de 25 de Mayo
-          </p>
-          <p className="text-xs mt-4 text-gray-500">
-            © 2025 CDC 25 de Mayo - Todos los derechos reservados
-          </p>
+      <footer className="bg-gray-900 text-gray-300 py-12 px-4">
+        <div className="max-w-6xl mx-auto">
+          {/* Logos Institucionales */}
+          <div className="mb-8">
+            <h3 className="text-white text-center text-lg font-semibold mb-6">Dependencias</h3>
+            <div className="flex flex-wrap justify-center items-center gap-8">
+              <motion.div
+                whileHover={{ scale: 1.1 }}
+                className="bg-white p-4 rounded-lg"
+              >
+                <Image
+                  src="/images/logos/logo-1.jpg"
+                  alt="SEDRONAR"
+                  width={120}
+                  height={60}
+                  className="object-contain"
+                />
+              </motion.div>
+              <motion.div
+                whileHover={{ scale: 1.1 }}
+                className="bg-white p-4 rounded-lg"
+              >
+                <Image
+                  src="/images/logos/logo-2.jpg"
+                  alt="Gobierno de La Pampa"
+                  width={120}
+                  height={60}
+                  className="object-contain"
+                />
+              </motion.div>
+              <motion.div
+                whileHover={{ scale: 1.1 }}
+                className="bg-white p-4 rounded-lg"
+              >
+                <Image
+                  src="/images/logos/logo-3.jpg"
+                  alt="Municipalidad 25 de Mayo"
+                  width={120}
+                  height={60}
+                  className="object-contain"
+                />
+              </motion.div>
+            </div>
+          </div>
+
+          {/* Información */}
+          <div className="text-center border-t border-gray-700 pt-8">
+            <p className="mb-2">
+              <strong className="text-white">Centro de Día Comunitario - 25 de Mayo</strong>
+            </p>
+            <p className="text-sm mb-4">
+              Un dispositivo de SEDRONAR, Subsecretaría de Salud Mental y Adicciones de La Pampa,
+              y Municipalidad de 25 de Mayo
+            </p>
+            <div className="flex flex-wrap justify-center gap-6 text-sm mb-4">
+              <span>📍 Trenel 53, 25 de Mayo</span>
+              <span>📞 299 4152668</span>
+              <span>📧 cdc.25demayolp.coordinacion@gmail.com</span>
+            </div>
+            <p className="text-xs text-gray-500">
+              © 2025 CDC 25 de Mayo - Todos los derechos reservados
+            </p>
+          </div>
         </div>
       </footer>
 
