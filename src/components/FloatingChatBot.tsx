@@ -130,17 +130,15 @@ export default function FloatingChatBot() {
             onClick={() => setIsOpen(true)}
             className="fixed bottom-6 right-6 z-50 bg-cdc-green hover:bg-cdc-dark-green text-white rounded-full p-4 shadow-2xl transition-colors duration-300"
           >
+            {/* Icono de bot con mensaje */}
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
               fill="currentColor"
               className="w-8 h-8"
             >
-              <path
-                fillRule="evenodd"
-                d="M4.848 2.771A49.144 49.144 0 0112 2.25c2.43 0 4.817.178 7.152.52 1.978.292 3.348 2.024 3.348 3.97v6.02c0 1.946-1.37 3.678-3.348 3.97a48.901 48.901 0 01-3.476.383.39.39 0 00-.297.17l-2.755 4.133a.75.75 0 01-1.248 0l-2.755-4.133a.39.39 0 00-.297-.17 48.9 48.9 0 01-3.476-.384c-1.978-.29-3.348-2.024-3.348-3.97V6.741c0-1.946 1.37-3.678 3.348-3.97z"
-                clipRule="evenodd"
-              />
+              <path d="M16.5 3.5a2 2 0 11-4 0 2 2 0 014 0zm-6 0a2 2 0 11-4 0 2 2 0 014 0z" />
+              <path fillRule="evenodd" d="M12 1.5c-2.761 0-5 2.239-5 5v1.5h-1.5A1.5 1.5 0 004 9.5v9A1.5 1.5 0 005.5 20h13a1.5 1.5 0 001.5-1.5v-9A1.5 1.5 0 0018.5 8H17V6.5c0-2.761-2.239-5-5-5zm-3.5 5c0-1.933 1.567-3.5 3.5-3.5s3.5 1.567 3.5 3.5V8h-7V6.5zM8 12a1 1 0 100-2 1 1 0 000 2zm4 0a1 1 0 100-2 1 1 0 000 2zm4-1a1 1 0 11-2 0 1 1 0 012 0zm-4 4a3 3 0 002.83-2H9.17A3 3 0 0012 15z" clipRule="evenodd" />
             </svg>
             {unreadCount > 0 && (
               <motion.span
