@@ -1,311 +1,522 @@
-// Lógica del bot - Sistema RAG simplificado (keyword-based para Vercel)
+// Lógica del bot CDC con IA + RAG (igual que bot de WhatsApp)
+
+import Groq from 'groq-sdk'
+import { readFile } from 'fs/promises'
+import { join } from 'path'
+
+// =====================================================
+// TIPOS
+// =====================================================
 
 export interface BotState {
-  state: 'main' | 'booking_name' | 'booking_contact' | 'booking_confirm'
-  booking_data?: {
-    name?: string
-    contact?: string
+  step: 'menu' | 'talleres_menu' | 'turno' | 'turno_fecha' | 'turno_hora' | 'turno_nombre' | 'turno_dni' | 'turno_motivo' | 'turno_primera_vez' | 'rag'
+  mis_turnos: Array<{
+    nombre: string
+    fecha: string
+    hora: string
+    motivo: string
+  }>
+  data: {
+    viernes_disponibles?: string[]
+    fecha?: string
+    horarios_disponibles?: string[]
+    hora?: string
+    nombre?: string
+    dni?: string
+    motivo?: string
   }
 }
 
-// Información base del CDC
-export const INFO_CENTRO = `*Centro de Día Comunitario – 25 de Mayo*
+// =====================================================
+// CONFIGURACIÓN
+// =====================================================
 
-📍 *Dirección:* Trenel 53, Colonia 25 de Mayo, La Pampa
-📞 *Teléfono:* 299 4152668
-📧 *Email:* cdc.25demayolp.coordinacion@gmail.com
-🌐 *Web:* https://sites.google.com/view/centro-de-da-25-de-mayo/`
+const INFO_CENTRO = `El Centro de Día Comunitario – 25 de Mayo es un dispositivo territorial comunitario 
+que brinda atención en salud mental y adicciones. Depende de la Subsecretaría de Salud Mental y 
+Adicciones del Gobierno de La Pampa, la Municipalidad de 25 de Mayo y SEDRONAR.
 
-export const HORARIOS = `*⏰ Horarios de Verano*
+¿Quiénes pueden asistir?
+Personas mayores de 13 años que necesiten acompañamiento, contención y espacios terapéuticos.`
 
-🌅 *Mañana:*
-Lunes a viernes: 9:00 a 12:00 hs
+const HORARIOS = `HORARIOS DE VERANO:
+• Lunes a viernes (mañana): 9:00 a 12:00 hs
+• Lunes, miércoles y jueves (tarde): 16:00 a 19:00 hs
+• Martes y viernes (tarde): 17:00 a 20:00 hs`
 
-🌆 *Tarde:*
-• Lunes, miércoles y jueves: 16:00 a 19:00 hs
-• Martes y viernes: 17:00 a 20:00 hs`
+const DIRECCION = 'Trenel 53, Colonia 25 de Mayo, La Pampa'
+const TELEFONO = '299 4152668'
+const EMAIL = 'cdc.25demayolp.coordinacion@gmail.com'
 
-// Base de conocimientos simplificada
-export const KNOWLEDGE_BASE = {
-  'que es': `*¿Qué es el Centro de Día Comunitario?*
+// Datos base para RAG
+const DOC_TEXTS = [
+  { title: 'Centro de Día Comunitario', content: INFO_CENTRO },
+  { title: 'Horarios', content: HORARIOS },
+  { title: 'Contacto', content: `Dirección: ${DIRECCION}\nTeléfono: ${TELEFONO}\nEmail: ${EMAIL}` },
+  {
+    title: 'Fundación',
+    content: `El Centro de Día Comunitario se puso en funcionamiento el 5 de octubre de 2021 
+    como parte del trabajo conjunto entre la municipalidad, provincia y nación para dar respuesta específica en materia 
+    de consumos problemáticos y salud mental en 25 de Mayo.`,
+  },
+  {
+    title: 'Ingreso al Centro de Día',
+    content: `Para participar de las actividades se realiza una primera escucha con el equipo profesional.
+    Luego de esta entrevista inicial se asignan turnos según disponibilidad para:
+    - Psicoterapia individual
+    - Talleres terapéuticos
+    - Dispositivos grupales
+    - Acompañamiento en salud mental comunitaria`,
+  },
+  {
+    title: 'Dispositivos disponibles',
+    content: `Dispositivos del CDC:
+    - Acompañamiento para personas en situación de consumos problemáticos
+    - Dispositivo grupal quincenal para familiares de personas con consumos
+    - Talleres con modalidad terapéutica
+    - Espacios grupales de salud mental
+    - Psicoterapia individual según evaluación y disponibilidad`,
+  },
+  {
+    title: 'Psiquiatría',
+    content: `El psiquiatra del Centro de Día realiza el seguimiento y acompañamiento farmacológico de quienes lo necesitan.
+    La interconsulta psiquiátrica es solicitada por el psicólogo/a del Centro, para trabajar de manera articulada en espacios individuales, grupales o talleres.
+    Atención: Viernes por la mañana (requiere turno previo)`,
+  },
+  {
+    title: 'Talleres',
+    content: `Talleres disponibles en el CDC:
+    1. TransformArte (reciclado creativo): Lunes y jueves 18:00 a 20:00 hs
+    2. Amor de Huerta (horticultura): Martes y viernes 18:30 a 20:30 hs, Miércoles 10:30 a 12:30 hs
+       El taller es gratuito. Como parte del circuito productivo, el grupo vende lo que produce (plantas y aromáticas) con fines formativos e integradores.
+    3. Teatro Leído y Escritura: Viernes 18:00 a 19:00 hs
+    4. Espacio Grupal (terapia grupal): Miércoles 14:00 hs
+    5. Columna Radial: Todos los lunes a las 11:00 hs en la radio municipal. Se abordan temas de salud mental, promoción de salud comunitaria y consumos problemáticos.`,
+  },
+  {
+    title: 'Preguntas frecuentes',
+    content: `¿Puedo asistir con compañía o con mi hijo si no tengo con quién dejarlo?
+    Sí. Podés asistir acompañado/a. Entendemos las situaciones familiares y buscamos facilitar el acceso.
+    
+    ¿Las actividades tienen costo?
+    No. Todas las actividades del Centro de Día son gratuitas.`,
+  },
+]
 
-El CDC es un dispositivo territorial que aborda problemáticas de *salud mental* y *consumos problemáticos* de sustancias.
+// =====================================================
+// INICIALIZACIÓN DE IA
+// =====================================================
 
-Es un espacio de:
-✅ Encuentro y contención
-✅ Recreación y expresión
-✅ Formación y capacitación
-✅ Prevención y promoción de salud
+let groqClient: Groq | null = null
+let knowledgeBase: string[] = []
 
-*¿Quiénes pueden asistir?*
-Personas mayores de *13 años* que necesiten acompañamiento, contención y espacios terapéuticos.`,
+export async function initRAG() {
+  try {
+    // Inicializar Groq
+    const apiKey = process.env.GROQ_API_KEY
+    if (!apiKey) {
+      console.warn('⚠️ GROQ_API_KEY no configurada')
+      return { groqClient: null, knowledgeBase: [] }
+    }
 
-  'servicios': `*🏥 Servicios del CDC*
+    groqClient = new Groq({ apiKey })
 
-*Dispositivos Disponibles:*
-1. Acompañamiento para personas en situación de consumos problemáticos
-2. Dispositivo grupal quincenal para familiares
-3. Talleres con modalidad terapéutica
-4. Espacios grupales de salud mental
-5. Psicoterapia individual (según evaluación y disponibilidad)
+    // Crear base de conocimiento
+    knowledgeBase = DOC_TEXTS.map((doc) => doc.content)
 
-*Atención Profesional:*
-• Psicólogos/as
-• Psiquiatra (viernes por la mañana)
-• Acompañantes terapéuticos
-• Talleristas especializados
+    // Cargar archivos de data si existen
+    const dataFiles = ['info_cdc.txt', 'talleres.txt', 'preguntas_frecuentes.txt']
 
-*Ingreso al Centro:*
-Para participar se realiza una *primera escucha* con el equipo profesional (sin turno previo).`,
+    for (const filename of dataFiles) {
+      try {
+        const filepath = join(process.cwd(), 'data', filename)
+        const content = await readFile(filepath, 'utf-8')
+        knowledgeBase.push(content)
+      } catch (error) {
+        // Archivo no existe o no se puede leer, continuar
+        console.log(`📄 ${filename} no encontrado (opcional)`)
+      }
+    }
 
-  'talleres': `*🎨 Talleres Disponibles*
-
-*1. AMOR DE HUERTA* 🌱
-Martes, miércoles y viernes
-Aprende técnicas de horticultura y trabajo en la tierra.
-
-*2. EXPRESAMENTE* ✍️
-Viernes 18:00 a 19:00 hs
-Teatro leído, escritura creativa y "La Voz del CDC".
-
-*3. TRANSFORMARTE* ♻️
-Lunes y jueves 18:00 a 20:00 hs
-Reciclado creativo y expresión artística.
-
-*4. ESPACIO GRUPAL* 👥
-Miércoles 14:00 hs
-Grupo terapéutico cerrado con inscripción previa.
-
-*5. COLUMNA RADIAL* 📻
-Lunes 11:00 hs en radio municipal
-Temas de salud mental y consumos problemáticos.
-
-_Todos los talleres son GRATUITOS._`,
-
-  'psiquiatra': `*🩺 Acompañamiento Psiquiátrico*
-
-El psiquiatra del CDC realiza:
-• Seguimiento farmacológico
-• Evaluaciones
-• Prescripciones según necesidad
-
-*Atención:* Viernes por la mañana
-*Modalidad:* Con turno previo
-
-La interconsulta psiquiátrica es solicitada por el psicólogo/a del Centro para trabajar de manera articulada.`,
-
-  'preguntas frecuentes': `*❓ Preguntas Frecuentes*
-
-*¿Es gratuito?*
-Sí, todos los servicios son completamente gratuitos.
-
-*¿Puedo asistir acompañado/a?*
-Sí, entendemos las situaciones familiares y buscamos facilitar el acceso.
-
-*¿Necesito derivación médica?*
-No, el CDC funciona con libre demanda.
-
-*¿Y el taller de huerta?*
-Es gratuito. El grupo vende lo que produce con fines formativos e integradores.
-
-*¿Tienen columna de radio?*
-Sí, todos los lunes a las 11:00 hs en la radio municipal.`,
+    console.log('✅ Sistema RAG inicializado correctamente')
+    return { groqClient, knowledgeBase }
+  } catch (error) {
+    console.error('❌ Error inicializando RAG:', error)
+    return { groqClient: null, knowledgeBase: [] }
+  }
 }
 
-// Menú principal
-export const MENU_PRINCIPAL = `*¿Qué te gustaría saber?*
+// =====================================================
+// FUNCIÓN RAG
+// =====================================================
+
+export async function ragAnswer(query: string): Promise<string> {
+  if (!groqClient || knowledgeBase.length === 0) {
+    return '⚠️ El sistema de respuestas inteligentes no está disponible temporalmente.'
+  }
+
+  try {
+    // Búsqueda simple por keywords
+    const queryLower = query.toLowerCase()
+    const relevantTexts: Array<{ matches: number; text: string }> = []
+
+    for (const text of knowledgeBase) {
+      const textLower = text.toLowerCase()
+      const queryWords = queryLower.split(/\s+/)
+      const matches = queryWords.filter((word) => word.length > 3 && textLower.includes(word)).length
+
+      if (matches > 0) {
+        relevantTexts.push({ matches, text })
+      }
+    }
+
+    // Ordenar por relevancia y tomar top 3
+    relevantTexts.sort((a, b) => b.matches - a.matches)
+    const context = relevantTexts
+      .slice(0, 3)
+      .map((item) => item.text)
+      .join('\n\n')
+
+    // Si no hay contexto relevante, usar info general
+    const finalContext = context || `${INFO_CENTRO}\n\n${HORARIOS}`
+
+    const prompt = `Sos un asistente del Centro de Día Comunitario de 25 de Mayo.
+Respondé la pregunta usando SOLO esta información:
+
+${finalContext}
+
+Pregunta: ${query}
+
+Respuesta (máximo 3 oraciones, directo al punto):`
+
+    const response = await groqClient.chat.completions.create({
+      model: 'llama-3.1-8b-instant',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.3,
+      max_tokens: 500,
+    })
+
+    return response.choices[0]?.message?.content || 'No pude generar una respuesta.'
+  } catch (error) {
+    console.error('❌ Error en RAG:', error)
+    return '❌ Error procesando la consulta.'
+  }
+}
+
+// =====================================================
+// MENÚ PRINCIPAL
+// =====================================================
+
+export function menuPrincipal(): string {
+  return `
+📋 *Menú principal*
+Elegí una opción:
 
 1️⃣ ¿Qué es el Centro de Día?
-2️⃣ Horarios y contacto
+2️⃣ Horarios y Contacto
 3️⃣ Servicios que ofrecemos
 4️⃣ Talleres disponibles
 5️⃣ Pedir turno con psiquiatra
 6️⃣ Ver mis turnos
 7️⃣ Pregunta abierta (IA)
 
-_Escribí el número de la opción o hacé tu consulta._`
-
-// Función principal del bot
-export function processMessage(
-  message: string,
-  state: BotState = { state: 'main' }
-): { response: string; newState: BotState } {
-  const msg = message.toLowerCase().trim()
-
-  // Comando para volver al menú
-  if (['0', 'menu', 'volver', 'inicio'].includes(msg)) {
-    return {
-      response: `${MENU_PRINCIPAL}`,
-      newState: { state: 'main' },
-    }
-  }
-
-  // Estados de reserva de turno
-  if (state.state === 'booking_name') {
-    return {
-      response: `Perfecto, *${message}*. Ahora necesito tu número de teléfono o email de contacto:`,
-      newState: {
-        state: 'booking_contact',
-        booking_data: { name: message },
-      },
-    }
-  }
-
-  if (state.state === 'booking_contact') {
-    const name = state.booking_data?.name || 'Usuario'
-    return {
-      response: `✅ *Turno registrado con éxito*
-
-*Nombre:* ${name}
-*Contacto:* ${message}
-*Día:* Viernes por la mañana (próxima disponibilidad)
-
-📞 Te contactaremos para confirmar el horario exacto al ${message}.
-
-*Recordá:*
-• La atención psiquiátrica es con turno previo
-• Si tenés alguna duda, llamá al 299 4152668
-
-¿Necesitás algo más?
-
-${MENU_PRINCIPAL}`,
-      newState: { state: 'main' },
-    }
-  }
-
-  // Respuestas del menú principal
-  if (msg === '1' || msg.includes('que es')) {
-    return {
-      response: `${KNOWLEDGE_BASE['que es']}\n\n${INFO_CENTRO}\n\n¿Querés saber algo más?\n\n${MENU_PRINCIPAL}`,
-      newState: { state: 'main' },
-    }
-  }
-
-  if (msg === '2' || msg.includes('horario') || msg.includes('contacto')) {
-    return {
-      response: `${HORARIOS}\n\n${INFO_CENTRO}\n\n¿Querés saber algo más?\n\n${MENU_PRINCIPAL}`,
-      newState: { state: 'main' },
-    }
-  }
-
-  if (msg === '3' || msg.includes('servicio')) {
-    return {
-      response: `${KNOWLEDGE_BASE['servicios']}\n\n¿Querés saber algo más?\n\n${MENU_PRINCIPAL}`,
-      newState: { state: 'main' },
-    }
-  }
-
-  if (msg === '4' || msg.includes('taller')) {
-    return {
-      response: `${KNOWLEDGE_BASE['talleres']}\n\n¿Querés saber algo más?\n\n${MENU_PRINCIPAL}`,
-      newState: { state: 'main' },
-    }
-  }
-
-  if (msg === '5' || msg.includes('turno') || msg.includes('psiquiatra')) {
-    return {
-      response: `${KNOWLEDGE_BASE['psiquiatra']}\n\n*📝 Para reservar tu turno*, escribí tu nombre completo:`,
-      newState: { state: 'booking_name' },
-    }
-  }
-
-  if (msg === '6' || msg.includes('mis turno')) {
-    return {
-      response: `📅 *Tus turnos registrados:*
-
-No tenés turnos registrados en este momento.
-
-Para pedir un turno con el psiquiatra, elegí la opción *5️⃣*.
-
-${MENU_PRINCIPAL}`,
-      newState: { state: 'main' },
-    }
-  }
-
-  if (msg === '7' || msg.includes('pregunta')) {
-    return {
-      response: `💬 *Pregunta abierta*
-
-Hacé tu consulta y te responderé con la información que tengo sobre el CDC.
-
-_Por ejemplo: "¿atienden adicciones?", "¿puedo ir sin turno?", etc._
-
-Para volver al menú, escribí *0* o *menu*.`,
-      newState: { state: 'main' },
-    }
-  }
-
-  // Búsqueda por palabras clave
-  if (msg.includes('adicc') || msg.includes('consumo')) {
-    return {
-      response: `*🔹 Consumos Problemáticos*
-
-El CDC está especializado en el abordaje de consumos problemáticos de sustancias (alcohol, tabaco, drogas, medicamentos, etc.).
-
-Ofrecemos:
-• Atención profesional individual
-• Acompañamientos terapéuticos
-• Dispositivo grupal para familiares
-• Espacios de contención
-
-📞 Contactanos al 299 4152668 para más información.
-
-${MENU_PRINCIPAL}`,
-      newState: { state: 'main' },
-    }
-  }
-
-  if (msg.includes('familia') || msg.includes('familiar')) {
-    return {
-      response: `*👨‍👩‍👧‍👦 Atención a Familias*
-
-El CDC ofrece:
-• Dispositivo grupal quincenal para familiares
-• Orientación y apoyo
-• Espacios de escucha
-• Herramientas para el acompañamiento
-
-Todas las actividades son gratuitas y confidenciales.
-
-${MENU_PRINCIPAL}`,
-      newState: { state: 'main' },
-    }
-  }
-
-  if (msg.includes('gratis') || msg.includes('costo') || msg.includes('pagar')) {
-    return {
-      response: `*💚 Servicios Gratuitos*
-
-✅ TODOS los servicios del CDC son completamente GRATUITOS:
-• Atención psicológica
-• Atención psiquiátrica
-• Talleres
-• Acompañamientos terapéuticos
-• Materiales para talleres
-
-No hay ningún costo para los participantes.
-
-${MENU_PRINCIPAL}`,
-      newState: { state: 'main' },
-    }
-  }
-
-  // Saludo inicial
-  if (msg.includes('hola') || msg.includes('buenos') || msg.includes('buenas')) {
-    return {
-      response: `¡Hola! 👋 Bienvenido/a al *Centro de Día Comunitario* de 25 de Mayo.
-
-${MENU_PRINCIPAL}`,
-      newState: { state: 'main' },
-    }
-  }
-
-  // Respuesta por defecto
-  return {
-    response: `No entendí tu consulta. 
-
-${MENU_PRINCIPAL}`,
-    newState: { state: 'main' },
-  }
+👉 Escribí el número de la opción.
+`
 }
 
+// =====================================================
+// FUNCIÓN PRINCIPAL DEL BOT
+// =====================================================
+
+export async function botResponse(raw: string, state: BotState): Promise<{ response: string; newState: BotState }> {
+  const msg = raw.trim().toLowerCase()
+
+  // Comando para volver al menú
+  if (['0', 'menu', 'menú', 'volver', 'inicio'].includes(msg)) {
+    return {
+      response: menuPrincipal(),
+      newState: { ...state, step: 'menu' },
+    }
+  }
+
+  // Detección automática de preguntas
+  const questionKeywords = ['qué', 'que', 'cómo', 'como', 'cuándo', 'cuando', 'dónde', 'donde', 'por qué', 'porque', 'cuál', 'cual', 'quién', 'quien', 'horario', 'taller', 'turno', 'atencion', 'ayuda']
+
+  const isQuestion = raw.includes('?') || questionKeywords.some((kw) => msg.includes(kw))
+
+  // MENÚ PRINCIPAL
+  if (state.step === 'menu') {
+    if (msg === 'hola' || !raw) {
+      return {
+        response: `👋 *Bienvenido/a al Centro de Día Comunitario 25 de Mayo*${menuPrincipal()}`,
+        newState: state,
+      }
+    }
+
+    if (['1', 'uno'].includes(msg)) {
+      return {
+        response: `${INFO_CENTRO}\n\n_Escribí *0* o *menú* para volver al menú principal._`,
+        newState: state,
+      }
+    }
+
+    if (['2', 'dos'].includes(msg)) {
+      return {
+        response: `📍 *Ubicación y Contacto*\n\n🏠 Dirección: ${DIRECCION}\n📞 Teléfono: ${TELEFONO}\n📧 Email: ${EMAIL}\n\n⏰ *Horarios:*\n${HORARIOS}\n\n💡 Podés acercarte sin turno para primera consulta.\n\n_Escribí *0* o *menú* para volver al menú principal._`,
+        newState: state,
+      }
+    }
+
+    if (['3', 'tres'].includes(msg)) {
+      return {
+        response: `🏥 *Servicios y Dispositivos del CDC:*
+
+✅ Acompañamiento para personas en situación de consumos problemáticos
+✅ Dispositivo grupal quincenal para familiares de personas con consumos
+✅ Talleres con modalidad terapéutica
+✅ Espacios grupales de salud mental
+✅ Psicoterapia individual según evaluación y disponibilidad
+✅ Acompañamiento psiquiátrico (viernes por la mañana)
+✅ Primera escucha con el equipo profesional
+
+📌 Todos los servicios son gratuitos
+📌 No se necesita derivación médica
+📌 Atención para mayores de 13 años
+
+_Escribí *0* o *menú* para volver al menú principal._`,
+        newState: state,
+      }
+    }
+
+    if (['4', 'cuatro'].includes(msg)) {
+      return {
+        response: `🎨 *Talleres del CDC*
+
+1️⃣ *TransformArte* - Reciclado creativo
+   📅 Lunes y Jueves 18:00-20:00 hs
+   ♻️ Transformamos materiales reciclables en arte
+
+2️⃣ *Amor de Huerta* - Horticultura
+   📅 Martes y Viernes 18:30-20:30 hs
+   📅 Miércoles 10:30-12:30 hs
+   🌱 Cultivamos alimentos y bienestar
+
+3️⃣ *Teatro Leído y Escritura*
+   📅 Viernes 18:00-19:00 hs
+   🎭 Expresión a través del arte escénico
+
+4️⃣ *Espacio Grupal* - Terapia grupal
+   📅 Miércoles 14:00 hs
+   💬 Acompañamiento terapéutico grupal
+
+5️⃣ *Columna Radial*
+   📻 Radio municipal - Lunes 11:00 hs
+
+👉 Escribí el número para más información, o *0* para volver al menú.`,
+        newState: { ...state, step: 'talleres_menu' },
+      }
+    }
+
+    if (['5', 'cinco'].includes(msg)) {
+      return {
+        response: '📅 *Sistema de turnos con psiquiatra*\n\nLos turnos son los viernes por la mañana.\n\n⚠️ Sistema de turnos simplificado. Para agendar, contactá al 299 4152668.\n\n_Escribí *0* o *menú* para volver al menú principal._',
+        newState: state,
+      }
+    }
+
+    if (['6', 'seis'].includes(msg)) {
+      if (state.mis_turnos.length > 0) {
+        const turnosText = state.mis_turnos
+          .map((t, idx) => `${idx + 1}. 📅 ${t.fecha} - ${t.hora} hs\n   👤 ${t.nombre}\n   🧠 ${t.motivo}`)
+          .join('\n\n')
+        return {
+          response: `📋 *Tus turnos:*\n\n${turnosText}\n\n_Escribí *0* o *menú* para volver al menú principal._`,
+          newState: state,
+        }
+      } else {
+        return {
+          response: '❌ No tenés turnos registrados.\n\n_Escribí *0* o *menú* para volver al menú principal._',
+          newState: state,
+        }
+      }
+    }
+
+    if (['7', 'siete'].includes(msg) || isQuestion) {
+      if (isQuestion && !['7', 'siete'].includes(msg)) {
+        // Responder directamente
+        const answer = await ragAnswer(raw)
+        return {
+          response: `🤖 ${answer}\n\n_Escribí *0* o *menú* para volver al menú principal._`,
+          newState: state,
+        }
+      } else {
+        return {
+          response: '🧠 *Pregunta abierta con IA*\n\nEscribí tu pregunta sobre el Centro de Día y te responderé usando toda la información disponible.\n\n_Escribí *0* para cancelar y volver al menú._',
+          newState: { ...state, step: 'rag' },
+        }
+      }
+    }
+
+    return {
+      response: '❌ Opción inválida. Elegí un número del 1 al 7.\n\n_Escribí *0* o *menú* para volver al menú principal._',
+      newState: state,
+    }
+  }
+
+  // MODO RAG
+  if (state.step === 'rag') {
+    const answer = await ragAnswer(raw)
+    return {
+      response: `🤖 ${answer}\n\n_Escribí *0* o *menú* para volver al menú principal._`,
+      newState: { ...state, step: 'menu' },
+    }
+  }
+
+  // SUBMENÚ DE TALLERES
+  if (state.step === 'talleres_menu') {
+    if (['1', 'uno'].includes(msg)) {
+      return {
+        response: `🎨 *TransformArte*
+
+♻️ *¿Qué es?*
+Taller de reciclado creativo donde transformamos materiales descartables en obras de arte y objetos útiles. Trabajamos con cartón, plásticos, telas y otros materiales.
+
+📅 *Horarios:*
+• Lunes 18:00 a 20:00 hs
+• Jueves 18:00 a 20:00 hs
+
+👥 *¿Para quién?*
+Abierto a toda la comunidad. No se requiere experiencia previa.
+
+💚 *Beneficios:*
+• Desarrollo de la creatividad
+• Conciencia ambiental
+• Espacio de encuentro y socialización
+• Gratuito y sin inscripción
+
+📍 Te esperamos en Trenel 53, 25 de Mayo.
+
+_Escribí *0* o *menú* para volver._`,
+        newState: { ...state, step: 'menu' },
+      }
+    }
+
+    if (['2', 'dos'].includes(msg)) {
+      return {
+        response: `🌱 *Amor de Huerta*
+
+🥬 *¿Qué es?*
+Taller de horticultura donde aprendemos a cultivar nuestros propios alimentos de forma orgánica. Armamos almácigos, cuidamos plantas y cosechamos verduras.
+
+📅 *Horarios:*
+• Martes 18:30 a 20:30 hs
+• Miércoles 10:30 a 12:30 hs
+• Viernes 18:30 a 20:30 hs
+
+👥 *¿Para quién?*
+Familias, adultos mayores, jóvenes. Todos pueden participar.
+
+💚 *Beneficios:*
+• Conexión con la naturaleza
+• Alimentación saludable
+• Trabajo en equipo
+• Actividad física al aire libre
+• Gratuito y sin inscripción
+
+🥕 ¡Llevate tus propias verduras a casa!
+
+_Escribí *0* o *menú* para volver._`,
+        newState: { ...state, step: 'menu' },
+      }
+    }
+
+    if (['3', 'tres'].includes(msg)) {
+      return {
+        response: `🎭 *Teatro Leído y Escritura*
+
+📖 *¿Qué es?*
+Espacio de expresión artística donde leemos obras de teatro y creamos nuestros propios textos. Exploramos personajes, emociones y narrativas.
+
+📅 *Horarios:*
+• Viernes 18:00 a 19:00 hs
+
+👥 *¿Para quién?*
+Personas interesadas en el teatro, la lectura y la escritura creativa. No se requiere experiencia.
+
+💚 *Beneficios:*
+• Desarrollo de la expresión oral
+• Estímulo de la creatividad
+• Espacio de reflexión
+• Trabajo colaborativo
+• Gratuito y sin inscripción
+
+🎬 ¡Animate a explorar nuevas formas de expresión!
+
+_Escribí *0* o *menú* para volver._`,
+        newState: { ...state, step: 'menu' },
+      }
+    }
+
+    if (['4', 'cuatro'].includes(msg)) {
+      return {
+        response: `💬 *Espacio Grupal*
+
+🤝 *¿Qué es?*
+Dispositivo terapéutico grupal coordinado por profesionales de salud mental. Es un espacio de escucha, contención y acompañamiento mutuo.
+
+📅 *Horarios:*
+• Miércoles 14:00 hs
+
+👥 *¿Para quién?*
+Personas que estén transitando procesos personales y busquen apoyo grupal.
+
+💚 *Beneficios:*
+• Acompañamiento profesional
+• Contención emocional
+• Aprendizaje compartido
+• Espacio confidencial y seguro
+• Gratuito
+
+🧠 La participación es voluntaria y requiere continuidad.
+
+_Escribí *0* o *menú* para volver._`,
+        newState: { ...state, step: 'menu' },
+      }
+    }
+
+    if (['5', 'cinco'].includes(msg)) {
+      return {
+        response: `📻 *Columna Radial*
+
+🎙️ *¿Qué es?*
+Espacio de difusión en la radio municipal donde hablamos sobre salud mental, consumos problemáticos y actividades del CDC.
+
+📡 *¿Cuándo escucharnos?*
+📅 **Todos los lunes a las 11:00 hs**
+📻 Radio municipal de 25 de Mayo
+
+💚 *Temas que abordamos:*
+• Salud mental
+• Promoción de salud comunitaria
+• Consumos problemáticos
+• Actividades del CDC
+• Desestigmatización
+
+🗣️ ¡Podés participar! Acercate al CDC.
+
+_Escribí *0* o *menú* para volver._`,
+        newState: { ...state, step: 'menu' },
+      }
+    }
+
+    return {
+      response: '❌ Opción inválida. Escribí un número del 1 al 5, o *0* para volver al menú.',
+      newState: state,
+    }
+  }
+
+  // Default
+  return {
+    response: '❌ No entendí tu mensaje.\n\n_Escribí *0* o *menú* para volver al menú principal._',
+    newState: state,
+  }
+}
