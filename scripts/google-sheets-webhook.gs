@@ -55,10 +55,17 @@ function doPost(e) {
 // =====================================================
 
 function createSheet(ss, sheetName) {
-  let sheet;
+  let sheet = ss.getSheetByName(sheetName);
+  
+  // Si ya existe, limpiarla y recrear headers
+  if (sheet) {
+    Logger.log('Hoja "' + sheetName + '" ya existe, recreando headers...');
+    sheet.clear();
+  } else {
+    sheet = ss.insertSheet(sheetName);
+  }
 
   if (sheetName === 'Conversaciones') {
-    sheet = ss.insertSheet('Conversaciones');
     sheet.appendRow([
       'Timestamp',
       'Session ID',
