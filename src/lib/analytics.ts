@@ -51,8 +51,15 @@ interface DailyStats {
 
 export async function logConversation(data: ConversationLog): Promise<void> {
   try {
-    // Enviar a API endpoint que guardará en Google Sheets
-    await fetch('/api/analytics/log', {
+    // Enviar directamente a Google Sheets Webhook (evitar problemas de URL relativa en servidor)
+    const webhookUrl = process.env.GOOGLE_SHEETS_WEBHOOK_URL
+    
+    if (!webhookUrl) {
+      console.warn('⚠️ GOOGLE_SHEETS_WEBHOOK_URL no configurada. Analytics deshabilitados.')
+      return
+    }
+
+    await fetch(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),

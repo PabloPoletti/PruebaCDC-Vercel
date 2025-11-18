@@ -269,7 +269,7 @@ function expandWithSynonyms(query: string): string[] {
 
 export async function ragAnswer(query: string, sessionId: string = 'anonymous'): Promise<string> {
   const startTime = Date.now()
-  let modelUsed = 'llama-70b'
+  let modelUsed = 'llama-3.3-70b'
   let errorOccurred = false
   let errorMessage = ''
   let contextRelevance = 0
@@ -395,7 +395,7 @@ TU RESPUESTA (simple y clara):`
     )
     
     const apiPromise = groqClient.chat.completions.create({
-      model: 'llama-3.1-70b-versatile',
+      model: 'llama-3.3-70b-versatile', // 👈 Modelo actualizado (nov 2024)
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.3,
       max_tokens: 600,
