@@ -1,9 +1,11 @@
-# 💚 CDC Bot - Versión Vercel
+# 💚 CDC Bot - Versión Vercel con IA + RAG
 
-Bot web profesional para el Centro de Día Comunitario de 25 de Mayo, La Pampa.
+Bot web profesional con inteligencia artificial para el Centro de Día Comunitario de 25 de Mayo, La Pampa.
 
 ## 🚀 **Características**
 
+- ✅ **IA Conversacional** (Groq + Llama 3.1 8B)
+- ✅ **RAG** (Retrieval Augmented Generation)
 - ✅ **Next.js 14** con App Router
 - ✅ **TypeScript** para mayor seguridad
 - ✅ **Tailwind CSS** para diseño moderno
@@ -13,14 +15,28 @@ Bot web profesional para el Centro de Día Comunitario de 25 de Mayo, La Pampa.
 - ✅ **API Routes** serverless
 - ✅ **Sistema de turnos** integrado
 - ✅ **Deploy automático** en Vercel
+- ✅ **Lógica igual al bot de WhatsApp** (sincronizado)
+
+---
+
+## ⚡ **Setup Rápido**
+
+### **1. Deploy en Vercel (5 minutos)**
+Ver: **[PASOS_DEPLOYMENT.md](PASOS_DEPLOYMENT.md)**
+
+### **2. Configurar IA (5 minutos)**
+Ver: **[CONFIGURAR_IA.md](CONFIGURAR_IA.md)** 👈 **¡IMPORTANTE!**
+
+> ⚠️ **Sin la API key de Groq**, el bot funciona pero sin IA conversacional (solo menú básico)
 
 ---
 
 ## 📦 **Instalación Local**
 
 ### **Requisitos:**
-- Node.js 18.x o superior
+- Node.js 20.x
 - npm o yarn
+- Groq API Key (gratis en https://console.groq.com)
 
 ### **Pasos:**
 
@@ -32,8 +48,9 @@ cd PruebaCDC-Vercel
 # 2. Instalar dependencias
 npm install
 
-# 3. Copiar variables de entorno (opcional)
-cp .env.example .env.local
+# 3. Configurar variables de entorno
+cp env.example .env.local
+# Editar .env.local y agregar tu GROQ_API_KEY
 
 # 4. Ejecutar en desarrollo
 npm run dev
