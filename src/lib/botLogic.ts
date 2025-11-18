@@ -194,8 +194,15 @@ function expandWithSynonyms(query: string): string[] {
 // =====================================================
 
 export async function ragAnswer(query: string): Promise<string> {
-  if (!groqClient || knowledgeBase.length === 0) {
-    return '⚠️ El sistema de respuestas inteligentes no está disponible temporalmente. Podés contactarnos al 299 4152668.'
+  // Validación inicial
+  if (!groqClient) {
+    console.error('❌ groqClient no inicializado')
+    return '⚠️ El sistema de respuestas inteligentes no está disponible. Podés contactarnos al 299 4152668.'
+  }
+  
+  if (knowledgeBase.length === 0) {
+    console.error('❌ knowledgeBase vacía')
+    return '⚠️ La base de conocimientos no está cargada. Podés contactarnos al 299 4152668.'
   }
 
   try {
@@ -268,13 +275,22 @@ ${query}
 TU RESPUESTA:`
 
     // 8. Llamar a la IA con modelo mejorado
-    const response = await groqClient.chat.completions.create({
-      model: 'llama-3.1-70b-versatile', // 👈 Versión 70B (más inteligente)
+    console.log('🤖 Llamando a Groq/Llama 70B...')
+    
+    // Intentar con timeout
+    const timeoutPromise = new Promise<never>((_, reject) => 
+      setTimeout(() => reject(new Error('Timeout: La IA tardó demasiado en responder')), 30000)
+    )
+    
+    const apiPromise = groqClient.chat.completions.create({
+      model: 'llama-3.1-70b-versatile',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.3,
       max_tokens: 600,
       top_p: 0.9,
     })
+    
+    const response = await Promise.race([apiPromise, timeoutPromise])
 
     const answer = response.choices[0]?.message?.content || 'No pude generar una respuesta.'
     
@@ -283,9 +299,75 @@ TU RESPUESTA:`
     
     return answer
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Error en RAG:', error)
-    return '❌ Disculpá, tuve un error al procesar tu consulta. Por favor intentá de nuevo o contactanos al 299 4152668.'
+    console.error('❌ Error detalle:', error?.message || 'Sin mensaje')
+    console.error('❌ Error stack:', error?.stack || 'Sin stack')
+    
+    // Detectar tipo de error
+    if (error?.message?.includes('rate_limit') || error?.message?.includes('429')) {
+      return '⚠️ El servicio de IA está temporalmente ocupado. Por favor intentá en unos segundos o escribí *0* para volver al menú.'
+    }
+    
+    if (error?.message?.includes('API key') || error?.message?.includes('401')) {
+      return '⚠️ Error de configuración del servicio. Contactanos al 299 4152668 para asistencia inmediata.'
+    }
+    
+    // Intentar fallback con modelo más simple (8B)
+    try {
+      console.log('🔄 Intentando fallback con Llama 8B...')
+      
+      // Buscar contexto (mismo código de arriba)
+      const expandedWords = expandWithSynonyms(query)
+      const filteredWords = filterStopwords(expandedWords)
+      const relevantTexts: Array<{ matches: number; text: string; coverage: number }> = []
+      
+      for (const text of knowledgeBase) {
+        const textLower = text.toLowerCase()
+        const matches = filteredWords.filter(word => textLower.includes(word)).length
+        const coverage = matches / Math.max(filteredWords.length, 1)
+        if (matches > 0) {
+          relevantTexts.push({ matches, text, coverage })
+        }
+      }
+      
+      relevantTexts.sort((a, b) => {
+        const scoreA = a.matches * 2 + a.coverage * 10
+        const scoreB = b.matches * 2 + b.coverage * 10
+        return scoreB - scoreA
+      })
+      
+      const context = relevantTexts.slice(0, 3).map(item => item.text).join('\n\n')
+      const finalContext = context || `${INFO_CENTRO}\n\n${HORARIOS}\n\nDirección: ${DIRECCION}\nTeléfono: ${TELEFONO}`
+      
+      const simplePrompt = `Respondé brevemente usando esta información:
+
+${finalContext}
+
+Pregunta: ${query}
+
+Respuesta (máximo 3 oraciones):`
+      
+      const fallbackResponse = await groqClient.chat.completions.create({
+        model: 'llama-3.1-8b-instant', // Modelo más simple como fallback
+        messages: [{ role: 'user', content: simplePrompt }],
+        temperature: 0.3,
+        max_tokens: 400,
+      })
+      
+      const fallbackAnswer = fallbackResponse.choices[0]?.message?.content || ''
+      if (fallbackAnswer) {
+        console.log('✅ Fallback exitoso con Llama 8B')
+        return fallbackAnswer
+      }
+    } catch (fallbackError) {
+      console.error('❌ Fallback también falló:', fallbackError)
+    }
+    
+    // Último recurso: responder con info básica sin IA
+    const basicInfo = `${INFO_CENTRO}\n\n${HORARIOS}\n\nDirección: ${DIRECCION}\nTeléfono: ${TELEFONO}`
+    
+    return `⚠️ No pude conectar con el servicio de respuestas inteligentes, pero aquí está la información básica:\n\n${basicInfo}\n\nPara consultas específicas, llamá al ${TELEFONO} o escribí *0* para volver al menú.`
   }
 }
 
