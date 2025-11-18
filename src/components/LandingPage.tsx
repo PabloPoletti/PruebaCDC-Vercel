@@ -496,67 +496,32 @@ export default function LandingPage() {
 
       {/* Contacto */}
       <section id="contacto" className="py-16 px-4 bg-gradient-to-r from-cdc-dark-green to-cdc-green text-white">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-12">¿Cómo encontrarnos?</h2>
-          
-          <div className="grid md:grid-cols-2 gap-6 mb-8">
-            {/* Dirección */}
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              className="bg-white/10 backdrop-blur-sm rounded-lg p-6 text-center"
-            >
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-4xl font-bold mb-8">¿Cómo encontrarnos?</h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            <div>
               <div className="text-4xl mb-3">📍</div>
               <h3 className="text-xl font-bold mb-2">Dirección</h3>
-              <p className="text-green-100 mb-3">Calle Trenel N°53<br />25 de Mayo, La Pampa</p>
-              <a
-                href="https://www.google.com/maps/@-37.7741819,-67.7111108,90m/data=!3m1!1e3?hl=es-419&entry=ttu&g_ep=EgoyMDI1MTExMi4wIKXMDSoASAFQAw%3D%3D"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors text-sm font-semibold"
-              >
-                🗺️ Cómo llegar
-              </a>
-            </motion.div>
-
-            {/* Teléfono */}
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              className="bg-white/10 backdrop-blur-sm rounded-lg p-6 text-center"
-            >
+              <p className="text-green-100">Calle Trenel N°53<br />25 de Mayo, La Pampa</p>
+            </div>
+            <div>
               <div className="text-4xl mb-3">📞</div>
               <h3 className="text-xl font-bold mb-2">Teléfono</h3>
-              <a 
-                href="tel:2994152668" 
-                className="text-green-100 hover:text-white transition-colors"
-              >
-                299 4152668
-              </a>
-            </motion.div>
-
-            {/* Email */}
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              className="bg-white/10 backdrop-blur-sm rounded-lg p-6 text-center md:col-span-2"
-            >
+              <p className="text-green-100">299 4152668</p>
+            </div>
+            <div>
               <div className="text-4xl mb-3">📧</div>
               <h3 className="text-xl font-bold mb-2">Email</h3>
-              <a 
-                href="mailto:cdc.25demayolp.coordinacion@gmail.com" 
-                className="text-green-100 hover:text-white transition-colors break-words"
-              >
-                cdc.25demayolp.coordinacion@gmail.com
-              </a>
-            </motion.div>
+              <p className="text-green-100 break-words">cdc.25demayolp.coordinacion@gmail.com</p>
+            </div>
           </div>
-
-          {/* Horarios */}
-          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-            <h3 className="text-2xl font-bold mb-4 text-center">Horarios de Verano</h3>
-            <div className="space-y-3">
-              <p className="text-lg">
+          <div className="mt-12">
+            <h3 className="text-2xl font-bold mb-4">Horarios de Verano</h3>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 max-w-2xl mx-auto">
+              <p className="text-lg mb-2">
                 <strong>Mañanas:</strong> Lunes a Viernes 9:00 - 12:00 hs
               </p>
-              <p className="text-lg">
+              <p className="text-lg mb-2">
                 <strong>Tardes:</strong> Lunes, Miércoles y Jueves 16:00 - 19:00 hs
               </p>
               <p className="text-lg">
