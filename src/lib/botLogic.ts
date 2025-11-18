@@ -146,59 +146,146 @@ export async function initRAG() {
 }
 
 // =====================================================
-// FUNCIÓN RAG
+// FUNCIONES AUXILIARES RAG MEJORADO
+// =====================================================
+
+const SPANISH_STOPWORDS = [
+  'el', 'la', 'de', 'que', 'y', 'a', 'en', 'un', 'ser', 'se', 'no',
+  'haber', 'por', 'con', 'su', 'para', 'como', 'estar', 'tener',
+  'le', 'lo', 'todo', 'pero', 'más', 'hacer', 'o', 'poder', 'decir',
+  'este', 'ya', 'ir', 'otro', 'ese', 'si', 'me', 'mi', 'porque'
+]
+
+const SYNONYMS: Record<string, string[]> = {
+  'psicólogo': ['terapeuta', 'psicóloga', 'psicoterapia', 'terapia', 'profesional'],
+  'taller': ['actividad', 'espacio', 'grupo', 'encuentro', 'clase'],
+  'horario': ['hora', 'cuándo', 'día', 'cuando', 'tiempo', 'schedule'],
+  'huerta': ['cultivo', 'plantas', 'horticultura', 'jardín', 'verduras'],
+  'reciclaje': ['reciclado', 'transformarte', 'reutilizar', 'reciclar', 'reusar'],
+  'ayuda': ['apoyo', 'asistencia', 'acompañamiento', 'soporte', 'auxilio'],
+  'adicción': ['consumo', 'sustancias', 'dependencia', 'drogas', 'adicciones'],
+}
+
+function filterStopwords(words: string[]): string[] {
+  return words.filter(word =>
+    word.length > 3 && !SPANISH_STOPWORDS.includes(word.toLowerCase())
+  )
+}
+
+function expandWithSynonyms(query: string): string[] {
+  const words = query.toLowerCase().split(/\s+/)
+  const expanded: Set<string> = new Set(words)
+
+  words.forEach(word => {
+    // Buscar si la palabra tiene sinónimos
+    Object.entries(SYNONYMS).forEach(([key, synonyms]) => {
+      if (key === word || synonyms.includes(word)) {
+        expanded.add(key)
+        synonyms.forEach(syn => expanded.add(syn))
+      }
+    })
+  })
+
+  return Array.from(expanded)
+}
+
+// =====================================================
+// FUNCIÓN RAG MEJORADA
 // =====================================================
 
 export async function ragAnswer(query: string): Promise<string> {
   if (!groqClient || knowledgeBase.length === 0) {
-    return '⚠️ El sistema de respuestas inteligentes no está disponible temporalmente.'
+    return '⚠️ El sistema de respuestas inteligentes no está disponible temporalmente. Podés contactarnos al 299 4152668.'
   }
 
   try {
-    // Búsqueda simple por keywords
-    const queryLower = query.toLowerCase()
-    const relevantTexts: Array<{ matches: number; text: string }> = []
+    // 1. Expandir query con sinónimos
+    const expandedWords = expandWithSynonyms(query)
+    console.log('🔍 Query expandida:', expandedWords.slice(0, 10))
+
+    // 2. Filtrar stopwords
+    const filteredWords = filterStopwords(expandedWords)
+    console.log('📝 Palabras clave:', filteredWords.slice(0, 8))
+
+    // 3. Buscar documentos relevantes
+    const relevantTexts: Array<{ matches: number; text: string; coverage: number }> = []
 
     for (const text of knowledgeBase) {
       const textLower = text.toLowerCase()
-      const queryWords = queryLower.split(/\s+/)
-      const matches = queryWords.filter((word) => word.length > 3 && textLower.includes(word)).length
-
+      
+      // Contar coincidencias
+      const matches = filteredWords.filter(word => textLower.includes(word)).length
+      
+      // Calcular cobertura (% de palabras clave encontradas)
+      const coverage = matches / Math.max(filteredWords.length, 1)
+      
       if (matches > 0) {
-        relevantTexts.push({ matches, text })
+        relevantTexts.push({ matches, text, coverage })
       }
     }
 
-    // Ordenar por relevancia y tomar top 3
-    relevantTexts.sort((a, b) => b.matches - a.matches)
-    const context = relevantTexts
-      .slice(0, 3)
-      .map((item) => item.text)
-      .join('\n\n')
-
-    // Si no hay contexto relevante, usar info general
-    const finalContext = context || `${INFO_CENTRO}\n\n${HORARIOS}`
-
-    const prompt = `Sos un asistente del Centro de Día Comunitario de 25 de Mayo.
-Respondé la pregunta usando SOLO esta información:
-
-${finalContext}
-
-Pregunta: ${query}
-
-Respuesta (máximo 3 oraciones, directo al punto):`
-
-    const response = await groqClient.chat.completions.create({
-      model: 'llama-3.1-8b-instant',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.3,
-      max_tokens: 500,
+    // 4. Ordenar por relevancia (matches + coverage)
+    relevantTexts.sort((a, b) => {
+      const scoreA = a.matches * 2 + a.coverage * 10
+      const scoreB = b.matches * 2 + b.coverage * 10
+      return scoreB - scoreA
     })
 
-    return response.choices[0]?.message?.content || 'No pude generar una respuesta.'
+    // Log de relevancia
+    console.log('📊 Top 3 relevancia:', relevantTexts.slice(0, 3).map(r => 
+      `matches: ${r.matches}, coverage: ${(r.coverage * 100).toFixed(0)}%`
+    ))
+
+    // 5. Tomar top 3 documentos
+    const context = relevantTexts
+      .slice(0, 3)
+      .map(item => item.text)
+      .join('\n\n')
+
+    // 6. Si no hay contexto relevante, usar info general
+    const finalContext = context || `${INFO_CENTRO}\n\n${HORARIOS}\n\nDirección: ${DIRECCION}\nTeléfono: ${TELEFONO}`
+
+    // 7. Mejorar prompt con personalidad empática
+    const prompt = `Sos Sofía, asistente virtual del Centro de Día Comunitario de 25 de Mayo.
+
+Tu rol es brindar información clara, empática y precisa sobre el CDC. Sos cálida, profesional y comprensiva.
+
+INFORMACIÓN DISPONIBLE:
+${finalContext}
+
+INSTRUCCIONES IMPORTANTES:
+- Respondé usando SOLAMENTE la información proporcionada arriba
+- Si no sabés algo, decí: "No tengo esa información específica, pero podés llamarnos al 299 4152668 o acercarte a Trenel 53"
+- Sé empática y cálida en tu tono
+- Usá un lenguaje simple y accesible
+- Si mencionás horarios, SIEMPRE incluí también la dirección (Trenel 53)
+- Si es sobre talleres, mencioná que son gratuitos y sin inscripción previa
+- Máximo 4 oraciones para ser concisa
+
+PREGUNTA DEL USUARIO:
+${query}
+
+TU RESPUESTA:`
+
+    // 8. Llamar a la IA con modelo mejorado
+    const response = await groqClient.chat.completions.create({
+      model: 'llama-3.1-70b-versatile', // 👈 Versión 70B (más inteligente)
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.3,
+      max_tokens: 600,
+      top_p: 0.9,
+    })
+
+    const answer = response.choices[0]?.message?.content || 'No pude generar una respuesta.'
+    
+    // Log para debugging
+    console.log('✅ Respuesta generada:', answer.substring(0, 100) + '...')
+    
+    return answer
+
   } catch (error) {
     console.error('❌ Error en RAG:', error)
-    return '❌ Error procesando la consulta.'
+    return '❌ Disculpá, tuve un error al procesar tu consulta. Por favor intentá de nuevo o contactanos al 299 4152668.'
   }
 }
 

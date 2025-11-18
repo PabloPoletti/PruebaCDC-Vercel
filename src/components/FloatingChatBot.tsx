@@ -36,17 +36,18 @@ export default function FloatingChatBot() {
       id: '0',
       role: 'assistant',
       content:
-        '¡Hola! 👋 Bienvenido/a al *Centro de Día Comunitario* de 25 de Mayo.\n\n' +
-        'Soy tu asistente virtual y estoy aquí para ayudarte.\n\n' +
-        '*¿Qué te gustaría saber?*\n\n' +
-        '1️⃣ ¿Qué es el Centro de Día?\n' +
-        '2️⃣ Horarios y contacto\n' +
-        '3️⃣ Servicios que ofrecemos\n' +
-        '4️⃣ Talleres disponibles\n' +
-        '5️⃣ Pedir turno con psiquiatra\n' +
-        '6️⃣ Ver mis turnos\n' +
-        '7️⃣ Pregunta abierta (IA)\n\n' +
-        '_Escribí el número de la opción o hacé tu consulta._',
+        '¡Hola! 👋 Soy **Sofía**, tu asistente virtual del *Centro de Día Comunitario* de 25 de Mayo.\n\n' +
+        '💬 *¿En qué puedo ayudarte hoy?*\n\n' +
+        'Podés preguntarme sobre:\n' +
+        '• ¿Qué es el Centro de Día?\n' +
+        '• Horarios y cómo llegar\n' +
+        '• Talleres y actividades\n' +
+        '• Turnos con profesionales\n' +
+        '• Consultas sobre salud mental\n\n' +
+        '👉 _Escribí tu consulta libremente o elegí del menú:_\n\n' +
+        '1️⃣ Info del CDC | 2️⃣ Horarios | 3️⃣ Servicios\n' +
+        '4️⃣ Talleres | 5️⃣ Turnos | 6️⃣ Mis turnos | 7️⃣ Preguntar\n\n' +
+        '📞 *Urgencias:* 299 4152668',
       timestamp: new Date(),
     }
     setMessages([welcomeMessage])
