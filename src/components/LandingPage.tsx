@@ -62,44 +62,74 @@ export default function LandingPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
-        className="relative h-[70vh] min-h-[500px] bg-gradient-to-r from-cdc-dark-green to-cdc-green flex items-center justify-center text-white overflow-hidden"
+        className="relative min-h-[600px] bg-gradient-to-r from-cdc-dark-green to-cdc-green overflow-hidden"
       >
-        <div className="absolute inset-0">
-          <Image
-            src="/images/hero/inicio-extra-6.png"
-            alt="Centro de Día Comunitario 25 de Mayo"
-            fill
-            className="object-contain bg-gradient-to-r from-cdc-dark-green to-cdc-green"
-            priority
-          />
+        <div className="max-w-7xl mx-auto px-4 py-16">
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            {/* Texto a la izquierda */}
+            <motion.div
+              initial={{ x: -50, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.8 }}
+              className="text-white space-y-6 z-10 relative"
+            >
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight">
+                Centro de Día<br />
+                Comunitario
+              </h1>
+              <div className="space-y-2">
+                <p className="text-2xl md:text-3xl font-semibold text-green-100">
+                  25 de Mayo
+                </p>
+                <p className="text-xl md:text-2xl text-green-50">
+                  La Pampa, Argentina
+                </p>
+              </div>
+              <p className="text-lg md:text-xl text-green-50 max-w-xl leading-relaxed">
+                Un espacio de encuentro, contención y crecimiento para toda la comunidad
+              </p>
+              <div className="flex flex-wrap gap-4 pt-4">
+                <motion.a
+                  href="#talleres"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="bg-white text-cdc-dark-green px-8 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all"
+                >
+                  Ver Talleres
+                </motion.a>
+                <motion.a
+                  href="#contacto"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="bg-transparent border-2 border-white text-white px-8 py-3 rounded-full font-semibold hover:bg-white/10 transition-all"
+                >
+                  Contacto
+                </motion.a>
+              </div>
+            </motion.div>
+
+            {/* Logo a la derecha */}
+            <motion.div
+              initial={{ x: 50, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.4, duration: 0.8 }}
+              className="relative h-[400px] md:h-[500px] flex items-center justify-center"
+            >
+              <div className="relative w-full h-full">
+                <Image
+                  src="/images/hero/inicio-extra-6.png"
+                  alt="Centro de Día Comunitario 25 de Mayo"
+                  fill
+                  className="object-contain drop-shadow-2xl"
+                  priority
+                />
+              </div>
+            </motion.div>
+          </div>
         </div>
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/50" />
-        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
-          <motion.h1
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="text-5xl md:text-7xl font-bold mb-6"
-          >
-            Centro de Día Comunitario
-          </motion.h1>
-          <motion.p
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="text-xl md:text-2xl mb-8 text-green-50"
-          >
-            25 de Mayo - La Pampa
-          </motion.p>
-          <motion.p
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="text-lg md:text-xl max-w-2xl mx-auto"
-          >
-            Un espacio de encuentro, contención y crecimiento para toda la comunidad
-          </motion.p>
-        </div>
+
+        {/* Decoración de fondo */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20 pointer-events-none" />
       </motion.section>
 
       {/* La Voz del CDC - Diario Digital */}
@@ -170,7 +200,7 @@ export default function LandingPage() {
       </section>
 
       {/* Talleres */}
-      <section className="py-16 px-4 bg-gray-50">
+      <section id="talleres" className="py-16 px-4 bg-gray-50">
         <div className="max-w-6xl mx-auto">
           <motion.h2
             initial={{ y: 50, opacity: 0 }}
@@ -465,7 +495,7 @@ export default function LandingPage() {
       </section>
 
       {/* Contacto */}
-      <section className="py-16 px-4 bg-gradient-to-r from-cdc-dark-green to-cdc-green text-white">
+      <section id="contacto" className="py-16 px-4 bg-gradient-to-r from-cdc-dark-green to-cdc-green text-white">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl font-bold mb-8">¿Cómo encontrarnos?</h2>
           <div className="grid md:grid-cols-3 gap-8">
