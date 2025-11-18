@@ -57,13 +57,77 @@ function doPost(e) {
 function createSheet(ss, sheetName) {
   let sheet = ss.getSheetByName(sheetName);
   
-  // Si ya existe, limpiarla y recrear headers
+  // Si ya existe, solo verificar que tenga headers, no recrear
   if (sheet) {
-    Logger.log('Hoja "' + sheetName + '" ya existe, recreando headers...');
-    sheet.clear();
-  } else {
-    sheet = ss.insertSheet(sheetName);
+    Logger.log('Hoja "' + sheetName + '" ya existe, verificando...');
+    
+    // Verificar si tiene headers (si la primera fila está vacía)
+    const firstRow = sheet.getRange(1, 1, 1, 1).getValue();
+    if (firstRow === '' || firstRow === null) {
+      Logger.log('Headers faltantes, agregando...');
+      // Solo agregar headers si no existen
+      if (sheetName === 'Conversaciones') {
+        sheet.appendRow([
+          'Timestamp',
+          'Session ID',
+          'Mensaje Usuario',
+          'Mensaje Normalizado',
+          'Respuesta Bot',
+          'RAG Usado',
+          'Modelo',
+          'Tiempo Respuesta (ms)',
+          'Error',
+          'Mensaje Error',
+          'Opción Menú',
+          'Relevancia Contexto',
+          'User Agent',
+          'Fue Útil'
+        ]);
+        sheet.getRange(1, 1, 1, 14).setFontWeight('bold').setBackground('#4285f4').setFontColor('white');
+        sheet.setFrozenRows(1);
+      } else if (sheetName === 'Estadísticas Diarias') {
+        sheet.appendRow([
+          'Fecha',
+          'Total Sesiones',
+          'Total Mensajes',
+          'Usuarios Únicos',
+          'Promedio Mensajes/Sesión',
+          'Tiempo Respuesta Promedio',
+          'Tasa de Error (%)',
+          'Preguntas Top 5',
+          'Tópicos Top 5',
+          'Hora Pico'
+        ]);
+        sheet.getRange(1, 1, 1, 10).setFontWeight('bold').setBackground('#34a853').setFontColor('white');
+        sheet.setFrozenRows(1);
+      } else if (sheetName === 'Sesiones') {
+        sheet.appendRow([
+          'Session ID',
+          'Inicio',
+          'Fin',
+          'Duración (min)',
+          'Total Mensajes',
+          'Mensajes Usuario',
+          'Mensajes Bot',
+          'Errores',
+          'Tiempo Respuesta Promedio',
+          'Opciones Menú',
+          'Consultas RAG',
+          'Tópicos'
+        ]);
+        sheet.getRange(1, 1, 1, 12).setFontWeight('bold').setBackground('#fbbc04').setFontColor('white');
+        sheet.setFrozenRows(1);
+      }
+    } else {
+      Logger.log('Headers ya existen, todo OK');
+    }
+    
+    return sheet;
   }
+  
+  // Si no existe, crearla
+  Logger.log('Creando nueva hoja: ' + sheetName);
+  sheet = ss.insertSheet(sheetName);
 
   if (sheetName === 'Conversaciones') {
     sheet.appendRow([
@@ -88,7 +152,6 @@ function createSheet(ss, sheetName) {
     sheet.setFrozenRows(1);
     
   } else if (sheetName === 'Estadísticas Diarias') {
-    sheet = ss.insertSheet('Estadísticas Diarias');
     sheet.appendRow([
       'Fecha',
       'Total Sesiones',
@@ -106,7 +169,6 @@ function createSheet(ss, sheetName) {
     sheet.setFrozenRows(1);
     
   } else if (sheetName === 'Sesiones') {
-    sheet = ss.insertSheet('Sesiones');
     sheet.appendRow([
       'Session ID',
       'Inicio',

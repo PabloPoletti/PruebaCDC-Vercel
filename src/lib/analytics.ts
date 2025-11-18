@@ -59,11 +59,41 @@ export async function logConversation(data: ConversationLog): Promise<void> {
       return
     }
 
-    await fetch(webhookUrl, {
+    // Formatear datos como array (formato esperado por Google Apps Script)
+    const rowData = [
+      data.timestamp,
+      data.sessionId,
+      data.userMessage,
+      data.userMessageNormalized || data.userMessage,
+      data.botResponse,
+      data.ragUsed ? 'Sí' : 'No',
+      data.modelUsed,
+      data.responseTime,
+      data.errorOccurred ? 'Sí' : 'No',
+      data.errorMessage || '',
+      data.menuOption || '',
+      data.contextRelevance ? (data.contextRelevance * 100).toFixed(2) + '%' : '',
+      data.userAgent || '',
+      data.wasHelpful === true ? 'Sí' : data.wasHelpful === false ? 'No' : ''
+    ]
+
+    // Enviar en formato esperado por el webhook
+    const payload = {
+      sheet: 'Conversaciones',
+      data: rowData
+    }
+
+    const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
+      body: JSON.stringify(payload),
     })
+
+    if (!response.ok) {
+      console.error('Error en webhook:', response.status, await response.text())
+    } else {
+      console.log('✅ Log enviado a Google Sheets')
+    }
   } catch (error) {
     console.error('Error logging conversation:', error)
     // No bloquear la conversación si falla el logging
