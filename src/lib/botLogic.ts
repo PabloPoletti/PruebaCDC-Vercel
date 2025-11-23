@@ -161,28 +161,28 @@ const SYNONYMS: Record<string, string[]> = {
   // Profesionales
   'psicólogo': ['terapeuta', 'psicóloga', 'psicologo', 'psicologa', 'psicoterapia', 'terapia', 'profesional', 'doc', 'doctor'],
   'psiquiatra': ['psikiatra', 'sikiatra', 'medico', 'médico'],
-  
+
   // Talleres y actividades
-  'taller': ['actividad', 'espacio', 'grupo', 'encuentro', 'clase', 'tayer', 'taler', 'activida'],
+  'taller': ['actividad', 'espacio', 'grupo', 'encuentro', 'clase', 'tayer', 'taler', 'activida', 'taleres', 'talleres'],
   'huerta': ['cultivo', 'plantas', 'horticultura', 'jardín', 'jardin', 'verduras', 'uerta', 'guerta'],
   'reciclaje': ['reciclado', 'transformarte', 'reutilizar', 'reciclar', 'reusar', 'reciklaje', 'resiclar'],
   'teatro': ['obra', 'actuación', 'actuacion', 'drama', 'teátro'],
   'radio': ['columna', 'programa', 'emisora', 'radial'],
-  
+
   // Tiempo y horarios
   'horario': ['hora', 'cuándo', 'cuando', 'día', 'dia', 'tiempo', 'schedule', 'orario', 'q dia', 'ke dia', 'k dia'],
   'mañana': ['manana', 'matutino', 'temprano', 'am', 'antes del mediodia', 'maña'],
   'tarde': ['tardesita', 'pm', 'despues del mediodia', 'x la tarde'],
-  
+
   // Ayuda y consultas
   'ayuda': ['apoyo', 'asistencia', 'acompañamiento', 'acompaña', 'soporte', 'auxilio', 'ayudar', 'ayudenme'],
   'adicción': ['consumo', 'sustancias', 'dependencia', 'drogas', 'adicciones', 'vicio', 'problema'],
   'consulta': ['consultar', 'preguntar', 'pregunta', 'info', 'información', 'informacion', 'konsulta'],
-  
+
   // Costos y acceso
   'gratis': ['gratuito', 'free', 'sin costo', 'no pago', 'no se paga', 'gratiz'],
   'turno': ['cita', 'hora', 'reserva', 'agendar', 'pedir hora', 'sacar turno'],
-  
+
   // Ubicación
   'dónde': ['donde', 'ubicación', 'ubicacion', 'dirección', 'direccion', 'como llego', 'adonde', 'a donde'],
   'cómo': ['como', 'de que forma', 'de q forma', 'de ke forma'],
@@ -191,50 +191,50 @@ const SYNONYMS: Record<string, string[]> = {
 // Normalizar texto de WhatsApp/coloquial
 function normalizeWhatsAppText(text: string): string {
   let normalized = text.toLowerCase()
-  
+
   // Correcciones ortográficas comunes
   const corrections: Record<string, string> = {
     // k/q por que/qué
     'q ': 'que ', 'k ': 'que ', 'qe ': 'que ', 'ke ': 'que ',
     ' q ': ' que ', ' k ': ' que ',
     'xq': 'porque', 'xk': 'porque', 'porq': 'porque', 'pork': 'porque',
-    
+
     // Abreviaturas de tiempo
     'tmb': 'también', 'tb': 'también', 'tbn': 'también',
     'dsp': 'después', 'desp': 'después',
     'bn': 'bien', 'mñn': 'mañana', 'mñana': 'mañana',
-    
+
     // h inicial
     'ola': 'hola', 'ora': 'hora', 'orario': 'horario',
     'ay': 'hay',
-    
+
     // Números por letras
-    'x': 'por', 
-    'd ': 'de ', 
-    
+    'x': 'por',
+    'd ': 'de ',
+
     // Mayúsculas todo
     'TODO': 'todo',
-    
+
     // Repetición de letras (emoción)
     'holaaa': 'hola',
     'siiii': 'si',
     'nooo': 'no',
   }
-  
+
   // Aplicar correcciones
   Object.entries(corrections).forEach(([wrong, correct]) => {
     normalized = normalized.replace(new RegExp(wrong, 'gi'), correct)
   })
-  
+
   // Quitar signos de interrogación/exclamación múltiples
   normalized = normalized.replace(/[?!]+/g, ' ')
-  
+
   // Quitar puntos suspensivos múltiples
   normalized = normalized.replace(/\.{2,}/g, ' ')
-  
+
   // Normalizar espacios
   normalized = normalized.replace(/\s+/g, ' ').trim()
-  
+
   return normalized
 }
 
@@ -274,13 +274,13 @@ export async function ragAnswer(query: string, sessionId: string = 'anonymous'):
   let errorMessage = ''
   let contextRelevance = 0
   let normalizedQuery = query // Inicializar con query original
-  
+
   // Validación inicial
   if (!groqClient) {
     console.error('❌ groqClient no inicializado')
     errorOccurred = true
     errorMessage = 'groqClient no inicializado'
-    
+
     // Log error
     await logConversation({
       timestamp: formatTimestamp(),
@@ -292,16 +292,16 @@ export async function ragAnswer(query: string, sessionId: string = 'anonymous'):
       responseTime: Date.now() - startTime,
       errorOccurred: true,
       errorMessage,
-    }).catch(() => {}) // No bloquear si falla
-    
+    }).catch(() => { }) // No bloquear si falla
+
     return '⚠️ El sistema de respuestas inteligentes no está disponible. Podés contactarnos al 299 4152668.'
   }
-  
+
   if (knowledgeBase.length === 0) {
     console.error('❌ knowledgeBase vacía')
     errorOccurred = true
     errorMessage = 'knowledgeBase vacía'
-    
+
     await logConversation({
       timestamp: formatTimestamp(),
       sessionId,
@@ -312,8 +312,8 @@ export async function ragAnswer(query: string, sessionId: string = 'anonymous'):
       responseTime: Date.now() - startTime,
       errorOccurred: true,
       errorMessage,
-    }).catch(() => {})
-    
+    }).catch(() => { })
+
     return '⚠️ La base de conocimientos no está cargada. Podés contactarnos al 299 4152668.'
   }
 
@@ -322,7 +322,7 @@ export async function ragAnswer(query: string, sessionId: string = 'anonymous'):
     normalizedQuery = normalizeWhatsAppText(query) // Actualizar la variable ya declarada
     console.log('📝 Query original:', query)
     console.log('✏️ Query normalizada:', normalizedQuery)
-    
+
     const expandedWords = expandWithSynonyms(query)
     console.log('🔍 Query expandida:', expandedWords.slice(0, 10))
 
@@ -335,13 +335,13 @@ export async function ragAnswer(query: string, sessionId: string = 'anonymous'):
 
     for (const text of knowledgeBase) {
       const textLower = text.toLowerCase()
-      
+
       // Contar coincidencias
       const matches = filteredWords.filter(word => textLower.includes(word)).length
-      
+
       // Calcular cobertura (% de palabras clave encontradas)
       const coverage = matches / Math.max(filteredWords.length, 1)
-      
+
       if (matches > 0) {
         relevantTexts.push({ matches, text, coverage })
       }
@@ -355,7 +355,7 @@ export async function ragAnswer(query: string, sessionId: string = 'anonymous'):
     })
 
     // Log de relevancia
-    console.log('📊 Top 3 relevancia:', relevantTexts.slice(0, 3).map(r => 
+    console.log('📊 Top 3 relevancia:', relevantTexts.slice(0, 3).map(r =>
       `matches: ${r.matches}, coverage: ${(r.coverage * 100).toFixed(0)}%`
     ))
 
@@ -365,8 +365,9 @@ export async function ragAnswer(query: string, sessionId: string = 'anonymous'):
       .map(item => item.text)
       .join('\n\n')
 
-    // 6. Si no hay contexto relevante, usar info general
-    const finalContext = context || `${INFO_CENTRO}\n\n${HORARIOS}\n\nDirección: ${DIRECCION}\nTeléfono: ${TELEFONO}`
+    // 6. Si no hay contexto relevante, usar info general + resumen de talleres
+    const TALLERES_RESUMEN = `Talleres: TransformArte (Reciclado), Amor de Huerta, Teatro, Espacio Grupal, Radio.`
+    const finalContext = context || `${INFO_CENTRO}\n\n${HORARIOS}\n\n${TALLERES_RESUMEN}\n\nDirección: ${DIRECCION}\nTeléfono: ${TELEFONO}`
 
     // 7. Prompt adaptado a lenguaje coloquial
     const prompt = `Sos Sofía del Centro de Día de 25 de Mayo. Hablás simple y cercano.
@@ -376,6 +377,7 @@ ${finalContext}
 
 IMPORTANTE:
 - Respondé DIRECTO, sin rodeos
+- Si preguntan por talleres, NOMBRALOS (TransformArte, Huerta, Teatro, etc.)
 - Si pregunta por horarios, decí día + hora + dirección (Trenel 53)
 - Todo es GRATIS y sin inscripción
 - Si no sabés algo: "Llamá al 299 4152668 que te ayudan"
@@ -388,12 +390,12 @@ TU RESPUESTA (simple y clara):`
 
     // 8. Llamar a la IA con modelo mejorado
     console.log('🤖 Llamando a Groq/Llama 70B...')
-    
+
     // Intentar con timeout
-    const timeoutPromise = new Promise<never>((_, reject) => 
+    const timeoutPromise = new Promise<never>((_, reject) =>
       setTimeout(() => reject(new Error('Timeout: La IA tardó demasiado en responder')), 30000)
     )
-    
+
     const apiPromise = groqClient.chat.completions.create({
       model: 'llama-3.1-8b-instant', // 👈 Modelo más rápido y con mayor límite diario (14.4K vs 1K)
       messages: [{ role: 'user', content: prompt }],
@@ -401,17 +403,17 @@ TU RESPUESTA (simple y clara):`
       max_tokens: 600,
       top_p: 0.9,
     })
-    
+
     const response = await Promise.race([apiPromise, timeoutPromise])
 
     const answer = response.choices[0]?.message?.content || 'No pude generar una respuesta.'
-    
+
     // Calcular relevancia del contexto (estimación basada en matches)
     contextRelevance = relevantTexts.length > 0 ? relevantTexts[0].coverage : 0
-    
+
     // Log para debugging
     console.log('✅ Respuesta generada:', answer.substring(0, 100) + '...')
-    
+
     // Log analytics
     await logConversation({
       timestamp: formatTimestamp(),
@@ -424,33 +426,33 @@ TU RESPUESTA (simple y clara):`
       responseTime: Date.now() - startTime,
       errorOccurred: false,
       contextRelevance,
-    }).catch(() => {})
-    
+    }).catch(() => { })
+
     return answer
 
   } catch (error: any) {
     console.error('❌ Error en RAG:', error)
     console.error('❌ Error detalle:', error?.message || 'Sin mensaje')
     console.error('❌ Error stack:', error?.stack || 'Sin stack')
-    
+
     // Detectar tipo de error
     if (error?.message?.includes('rate_limit') || error?.message?.includes('429')) {
       return '⚠️ El servicio de IA está temporalmente ocupado. Por favor intentá en unos segundos o escribí *0* para volver al menú.'
     }
-    
+
     if (error?.message?.includes('API key') || error?.message?.includes('401')) {
       return '⚠️ Error de configuración del servicio. Contactanos al 299 4152668 para asistencia inmediata.'
     }
-    
+
     // Intentar fallback con modelo más simple (8B)
     try {
       console.log('🔄 Intentando fallback con Llama 8B...')
-      
+
       // Buscar contexto (mismo código de arriba)
       const expandedWords = expandWithSynonyms(query)
       const filteredWords = filterStopwords(expandedWords)
       const relevantTexts: Array<{ matches: number; text: string; coverage: number }> = []
-      
+
       for (const text of knowledgeBase) {
         const textLower = text.toLowerCase()
         const matches = filteredWords.filter(word => textLower.includes(word)).length
@@ -459,16 +461,16 @@ TU RESPUESTA (simple y clara):`
           relevantTexts.push({ matches, text, coverage })
         }
       }
-      
+
       relevantTexts.sort((a, b) => {
         const scoreA = a.matches * 2 + a.coverage * 10
         const scoreB = b.matches * 2 + b.coverage * 10
         return scoreB - scoreA
       })
-      
+
       const context = relevantTexts.slice(0, 3).map(item => item.text).join('\n\n')
       const finalContext = context || `${INFO_CENTRO}\n\n${HORARIOS}\n\nDirección: ${DIRECCION}\nTeléfono: ${TELEFONO}`
-      
+
       const simplePrompt = `Respondé brevemente usando esta información:
 
 ${finalContext}
@@ -476,19 +478,19 @@ ${finalContext}
 Pregunta: ${query}
 
 Respuesta (máximo 3 oraciones):`
-      
+
       const fallbackResponse = await groqClient.chat.completions.create({
         model: 'llama-3.1-8b-instant', // Modelo más simple como fallback
         messages: [{ role: 'user', content: simplePrompt }],
         temperature: 0.3,
         max_tokens: 400,
       })
-      
+
       const fallbackAnswer = fallbackResponse.choices[0]?.message?.content || ''
       if (fallbackAnswer) {
         console.log('✅ Fallback exitoso con Llama 8B')
         modelUsed = 'llama-8b-fallback'
-        
+
         // Log analytics del fallback
         await logConversation({
           timestamp: formatTimestamp(),
@@ -501,19 +503,19 @@ Respuesta (máximo 3 oraciones):`
           responseTime: Date.now() - startTime,
           errorOccurred: false,
           errorMessage: 'Llama 70B failed, used 8B fallback',
-        }).catch(() => {})
-        
+        }).catch(() => { })
+
         return fallbackAnswer
       }
     } catch (fallbackError) {
       console.error('❌ Fallback también falló:', fallbackError)
       errorMessage += ' | Fallback failed: ' + (fallbackError as Error).message
     }
-    
+
     // Último recurso: responder con info básica sin IA
-    const basicInfo = `${INFO_CENTRO}\n\n${HORARIOS}\n\nDirección: ${DIRECCION}\nTeléfono: ${TELEFONO}`
+    const basicInfo = `${INFO_CENTRO}\n\n${HORARIOS}\n\nTalleres: TransformArte, Huerta, Teatro, Radio.\n\nDirección: ${DIRECCION}\nTeléfono: ${TELEFONO}`
     const finalResponse = `⚠️ No pude conectar con el servicio de respuestas inteligentes, pero aquí está la información básica:\n\n${basicInfo}\n\nPara consultas específicas, llamá al ${TELEFONO} o escribí *0* para volver al menú.`
-    
+
     // Log analytics del error final
     await logConversation({
       timestamp: formatTimestamp(),
@@ -526,8 +528,8 @@ Respuesta (máximo 3 oraciones):`
       responseTime: Date.now() - startTime,
       errorOccurred: true,
       errorMessage,
-    }).catch(() => {})
-    
+    }).catch(() => { })
+
     return finalResponse
   }
 }
@@ -574,7 +576,7 @@ async function logMenuOption(
     responseTime: Date.now() - startTime,
     errorOccurred: false,
     menuOption,
-  }).catch(() => {})
+  }).catch(() => { })
 }
 
 // =====================================================
@@ -589,7 +591,7 @@ export async function botResponse(raw: string, state: BotState, sessionId: strin
   if (['0', 'menu', 'menú', 'volver', 'inicio'].includes(msg)) {
     const response = menuPrincipal()
     await logMenuOption(sessionId, raw, response, 'Menu Principal', startTime)
-    
+
     return {
       response,
       newState: { ...state, step: 'menu' },
@@ -613,7 +615,7 @@ export async function botResponse(raw: string, state: BotState, sessionId: strin
     if (['1', 'uno'].includes(msg)) {
       const response = `${INFO_CENTRO}\n\n_Escribí *0* o *menú* para volver al menú principal._`
       await logMenuOption(sessionId, raw, response, '1 - Qué es el CDC', startTime)
-      
+
       return {
         response,
         newState: state,
@@ -623,7 +625,7 @@ export async function botResponse(raw: string, state: BotState, sessionId: strin
     if (['2', 'dos'].includes(msg)) {
       const response = `📍 *Ubicación y Contacto*\n\n🏠 Dirección: ${DIRECCION}\n📞 Teléfono: ${TELEFONO}\n📧 Email: ${EMAIL}\n\n⏰ *Horarios:*\n${HORARIOS}\n\n💡 Podés acercarte sin turno para primera consulta.\n\n_Escribí *0* o *menú* para volver al menú principal._`
       await logMenuOption(sessionId, raw, response, '2 - Horarios y Contacto', startTime)
-      
+
       return {
         response,
         newState: state,
@@ -647,7 +649,7 @@ export async function botResponse(raw: string, state: BotState, sessionId: strin
 
 _Escribí *0* o *menú* para volver al menú principal._`
       await logMenuOption(sessionId, raw, response, '3 - Servicios', startTime)
-      
+
       return {
         response,
         newState: state,
@@ -679,7 +681,7 @@ _Escribí *0* o *menú* para volver al menú principal._`
 
 👉 Escribí el número para más información, o *0* para volver al menú.`
       await logMenuOption(sessionId, raw, response, '4 - Talleres', startTime)
-      
+
       return {
         response,
         newState: { ...state, step: 'talleres_menu' },
@@ -689,7 +691,7 @@ _Escribí *0* o *menú* para volver al menú principal._`
     if (['5', 'cinco'].includes(msg)) {
       const response = '📅 *Sistema de turnos con psiquiatra*\n\nLos turnos son los viernes por la mañana.\n\n⚠️ Sistema de turnos simplificado. Para agendar, contactá al 299 4152668.\n\n_Escribí *0* o *menú* para volver al menú principal._'
       await logMenuOption(sessionId, raw, response, '5 - Turnos Psiquiatra', startTime)
-      
+
       return {
         response,
         newState: state,
@@ -707,7 +709,7 @@ _Escribí *0* o *menú* para volver al menú principal._`
         response = '❌ No tenés turnos registrados.\n\n_Escribí *0* o *menú* para volver al menú principal._'
       }
       await logMenuOption(sessionId, raw, response, '6 - Ver Mis Turnos', startTime)
-      
+
       return {
         response,
         newState: state,
