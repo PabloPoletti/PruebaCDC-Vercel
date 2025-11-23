@@ -269,7 +269,7 @@ function expandWithSynonyms(query: string): string[] {
 
 export async function ragAnswer(query: string, sessionId: string = 'anonymous'): Promise<string> {
   const startTime = Date.now()
-  let modelUsed = 'llama-3.1-8b-instant'
+  let modelUsed = 'llama-3.1-70b-versatile'
   let errorOccurred = false
   let errorMessage = ''
   let contextRelevance = 0
@@ -384,25 +384,6 @@ IMPORTANTE:
 - Máximo 3 líneas
 
 PREGUNTA (puede tener errores de ortografía, es normal):
-${query}
-
-TU RESPUESTA (simple y clara):`
-
-    // 8. Llamar a la IA con modelo mejorado
-    console.log('🤖 Llamando a Groq/Llama 70B...')
-
-    // Intentar con timeout
-    const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error('Timeout: La IA tardó demasiado en responder')), 30000)
-    )
-
-    const apiPromise = groqClient.chat.completions.create({
-      model: 'llama-3.1-8b-instant', // 👈 Modelo más rápido y con mayor límite diario (14.4K vs 1K)
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.3,
-      max_tokens: 600,
-      top_p: 0.9,
-    })
 
     const response = await Promise.race([apiPromise, timeoutPromise])
 
@@ -469,15 +450,15 @@ TU RESPUESTA (simple y clara):`
       })
 
       const context = relevantTexts.slice(0, 3).map(item => item.text).join('\n\n')
-      const finalContext = context || `${INFO_CENTRO}\n\n${HORARIOS}\n\nDirección: ${DIRECCION}\nTeléfono: ${TELEFONO}`
+      const finalContext = context || `${ INFO_CENTRO }\n\n${ HORARIOS }\n\nDirección: ${ DIRECCION }\nTeléfono: ${ TELEFONO }`
 
       const simplePrompt = `Respondé brevemente usando esta información:
 
-${finalContext}
+${ finalContext }
 
-Pregunta: ${query}
+    Pregunta: ${ query }
 
-Respuesta (máximo 3 oraciones):`
+    Respuesta(máximo 3 oraciones): `
 
       const fallbackResponse = await groqClient.chat.completions.create({
         model: 'llama-3.1-8b-instant', // Modelo más simple como fallback
@@ -513,8 +494,8 @@ Respuesta (máximo 3 oraciones):`
     }
 
     // Último recurso: responder con info básica sin IA
-    const basicInfo = `${INFO_CENTRO}\n\n${HORARIOS}\n\nTalleres: TransformArte, Huerta, Teatro, Radio.\n\nDirección: ${DIRECCION}\nTeléfono: ${TELEFONO}`
-    const finalResponse = `⚠️ No pude conectar con el servicio de respuestas inteligentes, pero aquí está la información básica:\n\n${basicInfo}\n\nPara consultas específicas, llamá al ${TELEFONO} o escribí *0* para volver al menú.`
+    const basicInfo = `${ INFO_CENTRO } \n\n${ HORARIOS } \n\nTalleres: TransformArte, Huerta, Teatro, Radio.\n\nDirección: ${ DIRECCION } \nTeléfono: ${ TELEFONO } `
+    const finalResponse = `⚠️ No pude conectar con el servicio de respuestas inteligentes, pero aquí está la información básica: \n\n${ basicInfo } \n\nPara consultas específicas, llamá al ${ TELEFONO } o escribí * 0 * para volver al menú.`
 
     // Log analytics del error final
     await logConversation({
@@ -540,16 +521,16 @@ Respuesta (máximo 3 oraciones):`
 
 export function menuPrincipal(): string {
   return `
-📋 *Menú principal*
-Elegí una opción:
+📋 * Menú principal *
+      Elegí una opción:
 
-1️⃣ ¿Qué es el Centro de Día?
-2️⃣ Horarios y Contacto
-3️⃣ Servicios que ofrecemos
-4️⃣ Talleres disponibles
-5️⃣ Pedir turno con psiquiatra
-6️⃣ Ver mis turnos
-7️⃣ Pregunta abierta (IA)
+    1️⃣ ¿Qué es el Centro de Día ?
+      2️⃣ Horarios y Contacto
+    3️⃣ Servicios que ofrecemos
+    4️⃣ Talleres disponibles
+    5️⃣ Pedir turno con psiquiatra
+    6️⃣ Ver mis turnos
+    7️⃣ Pregunta abierta(IA)
 
 👉 Escribí el número de la opción.
 `
@@ -607,13 +588,13 @@ export async function botResponse(raw: string, state: BotState, sessionId: strin
   if (state.step === 'menu') {
     if (msg === 'hola' || !raw) {
       return {
-        response: `👋 *Bienvenido/a al Centro de Día Comunitario 25 de Mayo*${menuPrincipal()}`,
+        response: `👋 * Bienvenido / a al Centro de Día Comunitario 25 de Mayo * ${ menuPrincipal() } `,
         newState: state,
       }
     }
 
     if (['1', 'uno'].includes(msg)) {
-      const response = `${INFO_CENTRO}\n\n_Escribí *0* o *menú* para volver al menú principal._`
+      const response = `${ INFO_CENTRO } \n\n_Escribí * 0 * o * menú * para volver al menú principal._`
       await logMenuOption(sessionId, raw, response, '1 - Qué es el CDC', startTime)
 
       return {
@@ -623,7 +604,7 @@ export async function botResponse(raw: string, state: BotState, sessionId: strin
     }
 
     if (['2', 'dos'].includes(msg)) {
-      const response = `📍 *Ubicación y Contacto*\n\n🏠 Dirección: ${DIRECCION}\n📞 Teléfono: ${TELEFONO}\n📧 Email: ${EMAIL}\n\n⏰ *Horarios:*\n${HORARIOS}\n\n💡 Podés acercarte sin turno para primera consulta.\n\n_Escribí *0* o *menú* para volver al menú principal._`
+      const response = `📍 * Ubicación y Contacto *\n\n🏠 Dirección: ${ DIRECCION } \n📞 Teléfono: ${ TELEFONO } \n📧 Email: ${ EMAIL } \n\n⏰ * Horarios:*\n${ HORARIOS } \n\n💡 Podés acercarte sin turno para primera consulta.\n\n_Escribí * 0 * o * menú * para volver al menú principal._`
       await logMenuOption(sessionId, raw, response, '2 - Horarios y Contacto', startTime)
 
       return {
@@ -633,21 +614,21 @@ export async function botResponse(raw: string, state: BotState, sessionId: strin
     }
 
     if (['3', 'tres'].includes(msg)) {
-      const response = `🏥 *Servicios y Dispositivos del CDC:*
+      const response = `🏥 * Servicios y Dispositivos del CDC:*
 
 ✅ Acompañamiento para personas en situación de consumos problemáticos
 ✅ Dispositivo grupal quincenal para familiares de personas con consumos
 ✅ Talleres con modalidad terapéutica
 ✅ Espacios grupales de salud mental
 ✅ Psicoterapia individual según evaluación y disponibilidad
-✅ Acompañamiento psiquiátrico (viernes por la mañana)
+✅ Acompañamiento psiquiátrico(viernes por la mañana)
 ✅ Primera escucha con el equipo profesional
 
 📌 Todos los servicios son gratuitos
 📌 No se necesita derivación médica
 📌 Atención para mayores de 13 años
 
-_Escribí *0* o *menú* para volver al menú principal._`
+    _Escribí * 0 * o * menú * para volver al menú principal._`
       await logMenuOption(sessionId, raw, response, '3 - Servicios', startTime)
 
       return {
@@ -657,29 +638,29 @@ _Escribí *0* o *menú* para volver al menú principal._`
     }
 
     if (['4', 'cuatro'].includes(msg)) {
-      const response = `🎨 *Talleres del CDC*
+      const response = `🎨 * Talleres del CDC *
 
-1️⃣ *TransformArte* - Reciclado creativo
-   📅 Lunes y Jueves 18:00-20:00 hs
+      1️⃣ * TransformArte * - Reciclado creativo
+   📅 Lunes y Jueves 18:00 - 20:00 hs
    ♻️ Transformamos materiales reciclables en arte
 
-2️⃣ *Amor de Huerta* - Horticultura
-   📅 Martes y Viernes 18:30-20:30 hs
-   📅 Miércoles 10:30-12:30 hs
+    2️⃣ * Amor de Huerta * - Horticultura
+   📅 Martes y Viernes 18: 30 - 20: 30 hs
+   📅 Miércoles 10: 30 - 12: 30 hs
    🌱 Cultivamos alimentos y bienestar
 
-3️⃣ *Teatro Leído y Escritura*
-   📅 Viernes 18:00-19:00 hs
+    3️⃣ * Teatro Leído y Escritura *
+   📅 Viernes 18:00 - 19:00 hs
    🎭 Expresión a través del arte escénico
 
-4️⃣ *Espacio Grupal* - Terapia grupal
+    4️⃣ * Espacio Grupal * - Terapia grupal
    📅 Miércoles 14:00 hs
    💬 Acompañamiento terapéutico grupal
 
-5️⃣ *Columna Radial*
+    5️⃣ * Columna Radial *
    📻 Radio municipal - Lunes 11:00 hs
 
-👉 Escribí el número para más información, o *0* para volver al menú.`
+👉 Escribí el número para más información, o * 0 * para volver al menú.`
       await logMenuOption(sessionId, raw, response, '4 - Talleres', startTime)
 
       return {
@@ -702,9 +683,9 @@ _Escribí *0* o *menú* para volver al menú principal._`
       let response: string
       if (state.mis_turnos.length > 0) {
         const turnosText = state.mis_turnos
-          .map((t, idx) => `${idx + 1}. 📅 ${t.fecha} - ${t.hora} hs\n   👤 ${t.nombre}\n   🧠 ${t.motivo}`)
+          .map((t, idx) => `${ idx + 1 }. 📅 ${ t.fecha } - ${ t.hora } hs\n   👤 ${ t.nombre } \n   🧠 ${ t.motivo } `)
           .join('\n\n')
-        response = `📋 *Tus turnos:*\n\n${turnosText}\n\n_Escribí *0* o *menú* para volver al menú principal._`
+        response = `📋 * Tus turnos:*\n\n${ turnosText } \n\n_Escribí * 0 * o * menú * para volver al menú principal._`
       } else {
         response = '❌ No tenés turnos registrados.\n\n_Escribí *0* o *menú* para volver al menú principal._'
       }
@@ -721,7 +702,7 @@ _Escribí *0* o *menú* para volver al menú principal._`
         // Responder directamente
         const answer = await ragAnswer(raw)
         return {
-          response: `🤖 ${answer}\n\n_Escribí *0* o *menú* para volver al menú principal._`,
+          response: `🤖 ${ answer } \n\n_Escribí * 0 * o * menú * para volver al menú principal._`,
           newState: state,
         }
       } else {
@@ -742,7 +723,7 @@ _Escribí *0* o *menú* para volver al menú principal._`
   if (state.step === 'rag') {
     const answer = await ragAnswer(raw)
     return {
-      response: `🤖 ${answer}\n\n_Escribí *0* o *menú* para volver al menú principal._`,
+      response: `🤖 ${ answer } \n\n_Escribí * 0 * o * menú * para volver al menú principal._`,
       newState: { ...state, step: 'menu' },
     }
   }
@@ -751,19 +732,19 @@ _Escribí *0* o *menú* para volver al menú principal._`
   if (state.step === 'talleres_menu') {
     if (['1', 'uno'].includes(msg)) {
       return {
-        response: `🎨 *TransformArte*
+        response: `🎨 * TransformArte *
 
-♻️ *¿Qué es?*
-Taller de reciclado creativo donde transformamos materiales descartables en obras de arte y objetos útiles. Trabajamos con cartón, plásticos, telas y otros materiales.
+♻️ *¿Qué es ?*
+      Taller de reciclado creativo donde transformamos materiales descartables en obras de arte y objetos útiles.Trabajamos con cartón, plásticos, telas y otros materiales.
 
-📅 *Horarios:*
+📅 * Horarios:*
 • Lunes 18:00 a 20:00 hs
 • Jueves 18:00 a 20:00 hs
 
-👥 *¿Para quién?*
-Abierto a toda la comunidad. No se requiere experiencia previa.
+👥 *¿Para quién ?*
+      Abierto a toda la comunidad.No se requiere experiencia previa.
 
-💚 *Beneficios:*
+💚 * Beneficios:*
 • Desarrollo de la creatividad
 • Conciencia ambiental
 • Espacio de encuentro y socialización
@@ -771,27 +752,27 @@ Abierto a toda la comunidad. No se requiere experiencia previa.
 
 📍 Te esperamos en Trenel 53, 25 de Mayo.
 
-_Escribí *0* o *menú* para volver._`,
+      _Escribí * 0 * o * menú * para volver._`,
         newState: { ...state, step: 'menu' },
       }
     }
 
     if (['2', 'dos'].includes(msg)) {
       return {
-        response: `🌱 *Amor de Huerta*
+        response: `🌱 * Amor de Huerta *
 
-🥬 *¿Qué es?*
-Taller de horticultura donde aprendemos a cultivar nuestros propios alimentos de forma orgánica. Armamos almácigos, cuidamos plantas y cosechamos verduras.
+🥬 *¿Qué es ?*
+      Taller de horticultura donde aprendemos a cultivar nuestros propios alimentos de forma orgánica.Armamos almácigos, cuidamos plantas y cosechamos verduras.
 
-📅 *Horarios:*
-• Martes 18:30 a 20:30 hs
-• Miércoles 10:30 a 12:30 hs
-• Viernes 18:30 a 20:30 hs
+📅 * Horarios:*
+• Martes 18: 30 a 20: 30 hs
+• Miércoles 10: 30 a 12: 30 hs
+• Viernes 18: 30 a 20: 30 hs
 
-👥 *¿Para quién?*
-Familias, adultos mayores, jóvenes. Todos pueden participar.
+👥 *¿Para quién ?*
+      Familias, adultos mayores, jóvenes.Todos pueden participar.
 
-💚 *Beneficios:*
+💚 * Beneficios:*
 • Conexión con la naturaleza
 • Alimentación saludable
 • Trabajo en equipo
@@ -800,25 +781,25 @@ Familias, adultos mayores, jóvenes. Todos pueden participar.
 
 🥕 ¡Llevate tus propias verduras a casa!
 
-_Escribí *0* o *menú* para volver._`,
+    _Escribí * 0 * o * menú * para volver._`,
         newState: { ...state, step: 'menu' },
       }
     }
 
     if (['3', 'tres'].includes(msg)) {
       return {
-        response: `🎭 *Teatro Leído y Escritura*
+        response: `🎭 * Teatro Leído y Escritura *
 
-📖 *¿Qué es?*
-Espacio de expresión artística donde leemos obras de teatro y creamos nuestros propios textos. Exploramos personajes, emociones y narrativas.
+📖 *¿Qué es ?*
+      Espacio de expresión artística donde leemos obras de teatro y creamos nuestros propios textos.Exploramos personajes, emociones y narrativas.
 
-📅 *Horarios:*
+📅 * Horarios:*
 • Viernes 18:00 a 19:00 hs
 
-👥 *¿Para quién?*
-Personas interesadas en el teatro, la lectura y la escritura creativa. No se requiere experiencia.
+👥 *¿Para quién ?*
+      Personas interesadas en el teatro, la lectura y la escritura creativa.No se requiere experiencia.
 
-💚 *Beneficios:*
+💚 * Beneficios:*
 • Desarrollo de la expresión oral
 • Estímulo de la creatividad
 • Espacio de reflexión
@@ -827,25 +808,25 @@ Personas interesadas en el teatro, la lectura y la escritura creativa. No se req
 
 🎬 ¡Animate a explorar nuevas formas de expresión!
 
-_Escribí *0* o *menú* para volver._`,
+    _Escribí * 0 * o * menú * para volver._`,
         newState: { ...state, step: 'menu' },
       }
     }
 
     if (['4', 'cuatro'].includes(msg)) {
       return {
-        response: `💬 *Espacio Grupal*
+        response: `💬 * Espacio Grupal *
 
-🤝 *¿Qué es?*
-Dispositivo terapéutico grupal coordinado por profesionales de salud mental. Es un espacio de escucha, contención y acompañamiento mutuo.
+🤝 *¿Qué es ?*
+      Dispositivo terapéutico grupal coordinado por profesionales de salud mental.Es un espacio de escucha, contención y acompañamiento mutuo.
 
-📅 *Horarios:*
+📅 * Horarios:*
 • Miércoles 14:00 hs
 
-👥 *¿Para quién?*
-Personas que estén transitando procesos personales y busquen apoyo grupal.
+👥 *¿Para quién ?*
+      Personas que estén transitando procesos personales y busquen apoyo grupal.
 
-💚 *Beneficios:*
+💚 * Beneficios:*
 • Acompañamiento profesional
 • Contención emocional
 • Aprendizaje compartido
@@ -854,23 +835,23 @@ Personas que estén transitando procesos personales y busquen apoyo grupal.
 
 🧠 La participación es voluntaria y requiere continuidad.
 
-_Escribí *0* o *menú* para volver._`,
+      _Escribí * 0 * o * menú * para volver._`,
         newState: { ...state, step: 'menu' },
       }
     }
 
     if (['5', 'cinco'].includes(msg)) {
       return {
-        response: `📻 *Columna Radial*
+        response: `📻 * Columna Radial *
 
-🎙️ *¿Qué es?*
-Espacio de difusión en la radio municipal donde hablamos sobre salud mental, consumos problemáticos y actividades del CDC.
+🎙️ *¿Qué es ?*
+      Espacio de difusión en la radio municipal donde hablamos sobre salud mental, consumos problemáticos y actividades del CDC.
 
-📡 *¿Cuándo escucharnos?*
-📅 **Todos los lunes a las 11:00 hs**
+📡 *¿Cuándo escucharnos ?*
+📅 ** Todos los lunes a las 11:00 hs **
 📻 Radio municipal de 25 de Mayo
 
-💚 *Temas que abordamos:*
+💚 * Temas que abordamos:*
 • Salud mental
 • Promoción de salud comunitaria
 • Consumos problemáticos
@@ -879,7 +860,7 @@ Espacio de difusión en la radio municipal donde hablamos sobre salud mental, co
 
 🗣️ ¡Podés participar! Acercate al CDC.
 
-_Escribí *0* o *menú* para volver._`,
+      _Escribí * 0 * o * menú * para volver._`,
         newState: { ...state, step: 'menu' },
       }
     }
